@@ -5,8 +5,6 @@ export const ALL: APIRoute = async ({ request, params }) => {
   const path = params.path || '';
   
   return new Promise((resolve) => {
-    const chunks: Buffer[] = [];
-    
     const mockRes = {
       statusCode: 200,
       headers: {} as Record<string, string>,
@@ -52,10 +50,15 @@ export const ALL: APIRoute = async ({ request, params }) => {
 
     request.text().then((body) => {
       const url = new URL(request.url);
+      const headersArray: [string, string][] = [];
+      request.headers.forEach((value, key) => {
+        headersArray.push([key, value]);
+      });
+      
       const mockReq: any = {
         method: request.method,
         url: `/api/${path}${url.search}`,
-        headers: Object.fromEntries(request.headers.entries()),
+        headers: Object.fromEntries(headersArray),
         query: Object.fromEntries(url.searchParams.entries()),
       };
 

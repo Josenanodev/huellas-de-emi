@@ -157,7 +157,10 @@ try {
       e.preventDefault();
       
       const formData = new FormData(form as HTMLFormElement);
-      const data = Object.fromEntries(formData);
+      const data: Record<string, any> = {};
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
       
       try {
         const response = await fetch('/api/contact', {
