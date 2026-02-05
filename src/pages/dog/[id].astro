@@ -1,0 +1,185 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { id } = Astro.params;
+const apiUrl = import.meta.env.DEV ? 'http://localhost:4321' : '';
+
+let dog = null;
+let error = null;
+
+try {
+  const response = await fetch(`${apiUrl}/api/dogs/${id}`);
+  if (response.ok) {
+    dog = await response.json();
+  } else {
+    error = 'Perro no encontrado';
+  }
+} catch (e) {
+  error = 'Error al cargar el perro';
+}
+---
+
+<Layout title={dog ? dog.name : 'Perro'}>
+  <div class="container">
+    {error ? (
+      <div class="error">{error}</div>
+    ) : dog ? (
+      <div class="dog-detail">
+        <div class="dog-detail-header">
+          <div class="dog-detail-images">
+            {dog.images.length > 0 ? (
+              dog.images.map((image: string) => (
+                <img src={image} alt={dog.name} class="dog-detail-image" />
+              ))
+            ) : (
+              <img src="/images/default-dog.svg" alt={dog.name} class="dog-detail-image" />
+            )}
+          </div>
+          
+          <div class="dog-detail-info">
+            <h1>{dog.name}</h1>
+            <p>
+              <span class={`dog-status status-${dog.status}`}>
+                {dog.status === 'available' && 'Disponible'}
+                {dog.status === 'adopted' && 'Adoptado'}
+                {dog.status === 'in_treatment' && 'En Tratamiento'}
+                {dog.status === 'reserved' && 'Reservado'}
+              </span>
+            </p>
+            
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>Raza</strong>
+                {dog.breed}
+              </div>
+              <div class="info-item">
+                <strong>Edad</strong>
+                {dog.age} {dog.age === 1 ? 'año' : 'años'}
+              </div>
+              <div class="info-item">
+                <strong>Género</strong>
+                {dog.gender === 'male' ? 'Macho' : 'Hembra'}
+              </div>
+              <div class="info-item">
+                <strong>Tamaño</strong>
+                {dog.size === 'small' && 'Pequeño'}
+                {dog.size === 'medium' && 'Mediano'}
+                {dog.size === 'large' && 'Grande'}
+              </div>
+              <div class="info-item">
+                <strong>Vacunado</strong>
+                {dog.vaccinated ? 'Sí' : 'No'}
+              </div>
+              <div class="info-item">
+                <strong>Esterilizado</strong>
+                {dog.sterilized ? 'Sí' : 'No'}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h2>Sobre {dog.name}</h2>
+          <p>{dog.description}</p>
+          
+          {dog.personality && (
+            <div>
+              <h3>Personalidad</h3>
+              <p>{dog.personality}</p>
+            </div>
+          )}
+          
+          {dog.healthConditions.length > 0 && (
+            <div>
+              <h3>Condiciones de Salud</h3>
+              <ul>
+                {dog.healthConditions.map((condition: string) => (
+                  <li>{condition}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {dog.specialCare && (
+            <div>
+              <h3>Cuidados Especiales</h3>
+              <p>{dog.specialCare}</p>
+            </div>
+          )}
+        </div>
+        
+        {dog.status === 'available' && (
+          <div class="contact-section">
+            <h2>¿Interesado en adoptar a {dog.name}?</h2>
+            <form id="contact-form" class="contact-form">
+              <input type="hidden" name="dogId" value={dog._id} />
+              
+              <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="name" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="tel" id="phone" name="phone" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="message">Mensaje</label>
+                <textarea id="message" name="message" required></textarea>
+              </div>
+              
+              <button type="submit" class="btn">Enviar consulta</button>
+            </form>
+            <div id="form-message"></div>
+          </div>
+        )}
+      </div>
+    ) : null}
+    
+    <div style="margin-top: 2rem;">
+      <a href="/" class="btn btn-secondary">← Volver a la lista</a>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('contact-form');
+  const messageDiv = document.getElementById('form-message');
+  
+  if (form && messageDiv) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form as HTMLFormElement);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        
+        if (response.ok) {
+          messageDiv.className = 'success';
+          messageDiv.textContent = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
+          (form as HTMLFormElement).reset();
+        } else {
+          messageDiv.className = 'error';
+          messageDiv.textContent = 'Error al enviar el mensaje. Por favor, intenta de nuevo.';
+        }
+      } catch (error) {
+        messageDiv.className = 'error';
+        messageDiv.textContent = 'Error al enviar el mensaje. Por favor, intenta de nuevo.';
+      }
+    });
+  }
+</script>

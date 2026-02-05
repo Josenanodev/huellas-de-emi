@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} - Huellas de Emi</title>
+  <link rel="stylesheet" href="/styles/global.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">🐾 Huellas de Emi</a>
+      <ul class="nav-links">
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/admin">Admin</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <main>
+    <slot />
+  </main>
+  
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 Huellas de Emi. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
