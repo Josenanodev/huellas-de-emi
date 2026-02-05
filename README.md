@@ -111,6 +111,39 @@ npm run build
 npm run preview
 ```
 
+## Security Considerations
+
+⚠️ **Important**: This application includes basic security measures but is designed for demonstration purposes. Before deploying to production, please implement the following security enhancements:
+
+### Authentication
+- The current admin authentication uses plain-text password comparison in sessionStorage
+- **Recommendation**: Implement proper authentication with:
+  - Bcrypt for password hashing
+  - JWT tokens or secure session management
+  - HTTP-only cookies instead of sessionStorage
+  - Rate limiting to prevent brute force attacks
+
+### Input Validation
+- Basic validation is implemented for contact forms and dog data
+- **Recommendation**: Add comprehensive validation using libraries like:
+  - Joi or Yup for schema validation
+  - express-validator for Express routes
+  - Sanitize all user inputs to prevent XSS attacks
+
+### Additional Security Measures
+- Use HTTPS in production
+- Implement CSRF protection
+- Add security headers (helmet.js)
+- Set up proper CORS policies
+- Regular dependency updates and security audits
+- Environment variable protection
+
+### Database Security
+- Use MongoDB authentication in production
+- Implement proper backup strategies
+- Use connection pooling and proper error handling
+- Never expose MongoDB port directly to the internet
+
 ## Docker Commands
 
 Start MongoDB:

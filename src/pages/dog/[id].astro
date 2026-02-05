@@ -1,11 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import type { Dog } from '../../types';
 
 const { id } = Astro.params;
 const apiUrl = import.meta.env.DEV ? 'http://localhost:4321' : '';
 
-let dog = null;
-let error = null;
+let dog: Dog | null = null;
+let error: string | null = null;
 
 try {
   const response = await fetch(`${apiUrl}/api/dogs/${id}`);
@@ -149,6 +150,8 @@ try {
 </Layout>
 
 <script>
+  import type { ContactFormData } from '../../types';
+  
   const form = document.getElementById('contact-form');
   const messageDiv = document.getElementById('form-message');
   
@@ -157,10 +160,13 @@ try {
       e.preventDefault();
       
       const formData = new FormData(form as HTMLFormElement);
-      const data: Record<string, any> = {};
-      formData.forEach((value, key) => {
-        data[key] = value;
-      });
+      const data: ContactFormData = {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        dogId: formData.get('dogId') as string,
+        message: formData.get('message') as string,
+      };
       
       try {
         const response = await fetch('/api/contact', {

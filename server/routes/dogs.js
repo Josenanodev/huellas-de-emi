@@ -30,7 +30,21 @@ router.get('/:id', async (req, res) => {
 // Create dog (admin only)
 router.post('/', checkAdmin, async (req, res) => {
   try {
-    const dog = new Dog(req.body);
+    // Only allow specific fields to prevent injection of unexpected data
+    const allowedFields = [
+      'name', 'breed', 'age', 'gender', 'size', 'status', 
+      'description', 'personality', 'specialCare', 'healthConditions',
+      'vaccinated', 'sterilized', 'images'
+    ];
+    
+    const dogData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        dogData[field] = req.body[field];
+      }
+    }
+    
+    const dog = new Dog(dogData);
     await dog.save();
     res.status(201).json(dog);
   } catch (error) {
@@ -41,9 +55,23 @@ router.post('/', checkAdmin, async (req, res) => {
 // Update dog (admin only)
 router.put('/:id', checkAdmin, async (req, res) => {
   try {
+    // Only allow specific fields to prevent injection of unexpected data
+    const allowedFields = [
+      'name', 'breed', 'age', 'gender', 'size', 'status', 
+      'description', 'personality', 'specialCare', 'healthConditions',
+      'vaccinated', 'sterilized', 'images'
+    ];
+    
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    
     const dog = await Dog.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     if (!dog) {

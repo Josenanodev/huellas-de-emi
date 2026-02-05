@@ -1,9 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import type { Dog } from '../types';
 
 const apiUrl = import.meta.env.DEV ? 'http://localhost:4321' : '';
 const response = await fetch(`${apiUrl}/api/dogs`);
-const dogs = await response.json();
+const dogs: Dog[] = await response.json();
 ---
 
 <Layout title="Inicio">
@@ -15,7 +16,7 @@ const dogs = await response.json();
       <p>No hay perros disponibles en este momento.</p>
     ) : (
       <div class="dogs-grid">
-        {dogs.map((dog: any) => (
+        {dogs.map((dog) => (
           <div class="dog-card">
             <img 
               src={dog.images[0] || '/images/default-dog.svg'} 
