@@ -8,16 +8,21 @@ const { title } = Astro.props;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title} - Huellas de Emi</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
   <link rel="stylesheet" href="/styles/global.css">
 </head>
 <body>
   <nav class="navbar">
     <div class="container">
-      <a href="/" class="logo">🐾 Huellas de Emi</a>
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="Huellas de Emi" class="logo-image" />
+        <span class="logo-text">Huellas de Emi</span>
+      </a>
       <ul class="nav-links">
         <li><a href="/">Inicio</a></li>
         <li><a href="/admin">Admin</a></li>
       </ul>
+      <img src="/images/heart-paw.svg" alt="" class="nav-decoration" aria-hidden="true" />
     </div>
   </nav>
   
@@ -27,6 +32,7 @@ const { title } = Astro.props;
   
   <footer class="footer">
     <div class="container">
+      <img src="/images/bone.svg" alt="" class="footer-decoration" aria-hidden="true" />
       <p>&copy; 2026 Huellas de Emi. Todos los derechos reservados.</p>
     </div>
   </footer>
