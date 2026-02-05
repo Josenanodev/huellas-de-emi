@@ -112,32 +112,15 @@ try {
         {dog.status === 'available' && (
           <div class="contact-section">
             <h2>¿Interesado en adoptar a {dog.name}?</h2>
-            <form id="contact-form" class="contact-form">
-              <input type="hidden" name="dogId" value={dog._id} />
-              
-              <div class="form-group">
-                <label for="name">Nombre</label>
-                <input type="text" id="name" name="name" required />
-              </div>
-              
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required />
-              </div>
-              
-              <div class="form-group">
-                <label for="phone">Teléfono</label>
-                <input type="tel" id="phone" name="phone" required />
-              </div>
-              
-              <div class="form-group">
-                <label for="message">Mensaje</label>
-                <textarea id="message" name="message" required></textarea>
-              </div>
-              
-              <button type="submit" class="btn">Enviar consulta</button>
-            </form>
-            <div id="form-message"></div>
+            <p>Contáctanos por WhatsApp para más información sobre la adopción.</p>
+            <a 
+              href={`https://wa.me/+523313296314?text=Hola, me gustaría obtener más información sobre la adopción de ${dog.name}.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn"
+            >
+              💬 Enviar por WhatsApp
+            </a>
           </div>
         )}
       </div>
@@ -148,47 +131,3 @@ try {
     </div>
   </div>
 </Layout>
-
-<script>
-  import type { ContactFormData } from '../../types';
-  
-  const form = document.getElementById('contact-form');
-  const messageDiv = document.getElementById('form-message');
-  
-  if (form && messageDiv) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = new FormData(form as HTMLFormElement);
-      const data: ContactFormData = {
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        phone: formData.get('phone') as string,
-        dogId: formData.get('dogId') as string,
-        message: formData.get('message') as string,
-      };
-      
-      try {
-        const response = await fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        
-        if (response.ok) {
-          messageDiv.className = 'success';
-          messageDiv.textContent = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
-          (form as HTMLFormElement).reset();
-        } else {
-          messageDiv.className = 'error';
-          messageDiv.textContent = 'Error al enviar el mensaje. Por favor, intenta de nuevo.';
-        }
-      } catch (error) {
-        messageDiv.className = 'error';
-        messageDiv.textContent = 'Error al enviar el mensaje. Por favor, intenta de nuevo.';
-      }
-    });
-  }
-</script>

@@ -14,6 +14,10 @@
   --text-strong: #D9B2A9;
   --border: #D9B2A9;
   --shadow: rgba(165, 165, 142, 0.25);
+  --status-available: #8FBC8F;
+  --status-adopted: #D4A574;
+  --status-in-treatment: #7B9AC2;
+  --status-reserved: #C17A6B;
 }
 
 body {
@@ -33,7 +37,7 @@ body {
 .navbar {
   background-color: var(--surface-alt);
   color: var(--text);
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   box-shadow: 0 6px 18px var(--shadow);
 }
 
@@ -55,8 +59,8 @@ body {
 }
 
 .logo-image {
-  width: 40px;
-  height: 40px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   border-radius: 12px;
   background: var(--surface);
@@ -177,23 +181,23 @@ main {
 }
 
 .status-available {
-  background-color: var(--surface-alt);
-  color: var(--primary-dark);
+  background-color: var(--status-available);
+  color: #ffffff;
 }
 
 .status-adopted {
-  background-color: var(--surface);
-  color: var(--primary-dark);
+  background-color: var(--status-adopted);
+  color: #ffffff;
 }
 
 .status-in_treatment {
-  background-color: var(--bg);
-  color: var(--primary-dark);
+  background-color: var(--status-in-treatment);
+  color: #ffffff;
 }
 
 .status-reserved {
-  background-color: var(--primary);
-  color: var(--bg);
+  background-color: var(--status-reserved);
+  color: #ffffff;
 }
 
 .btn {
