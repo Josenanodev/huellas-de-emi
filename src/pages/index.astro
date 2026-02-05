@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import type { Dog } from '../types';
+
+const apiUrl = import.meta.env.DEV ? 'http://localhost:4321' : '';
+const response = await fetch(`${apiUrl}/api/dogs`);
+const dogs: Dog[] = await response.json();
+---
+
+<Layout title="Inicio">
+  <div class="container">
+    <h1>Perros en Adopción</h1>
+    <p>Conoce a nuestros adorables perros que están buscando un hogar lleno de amor.</p>
+    
+    {dogs.length === 0 ? (
+      <p>No hay perros disponibles en este momento.</p>
+    ) : (
+      <div class="dogs-grid">
+        {dogs.map((dog) => (
+          <div class="dog-card">
+            <img 
+              src={dog.images[0] || '/images/default-dog.svg'} 
+              alt={dog.name}
+              class="dog-image"
+            />
+            <div class="dog-info">
+              <h2 class="dog-name">{dog.name}</h2>
+              <p class="dog-breed">{dog.breed}</p>
+              <p>
+                <span class={`dog-status status-${dog.status}`}>
+                  {dog.status === 'available' && 'Disponible'}
+                  {dog.status === 'adopted' && 'Adoptado'}
+                  {dog.status === 'in_treatment' && 'En Tratamiento'}
+                  {dog.status === 'reserved' && 'Reservado'}
+                </span>
+              </p>
+              <p>{dog.description.substring(0, 100)}...</p>
+              <a href={`/dog/${dog._id}`} class="btn">Ver más</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</Layout>

@@ -1,2 +1,195 @@
-# huellas-de-emi
-website of dogs shelter for promoting adoptions and donations
+# Huellas de Emi 🐾
+
+Website for a dog shelter to promote adoptions and donations. Built as a fullstack monolith using MongoDB, Express.js, and Astro.js with TypeScript.
+
+## Features
+
+- 🐕 **Browse Dogs**: View all dogs available for adoption with detailed information
+- 📝 **Dog Details**: Individual page for each dog showing:
+  - Photos
+  - Health conditions
+  - Personality traits
+  - Special care requirements
+  - Vaccination and sterilization status
+- 💌 **Contact Form**: Users can express interest in adopting a specific dog
+- 🔐 **Admin Panel**: Secure admin interface to:
+  - Add new dogs
+  - Update dog information
+  - Delete dogs
+  - Manage adoption status
+
+## Tech Stack
+
+- **Frontend**: Astro.js with TypeScript
+- **Backend**: Express.js
+- **Database**: MongoDB with Mongoose
+- **Styling**: Vanilla CSS
+
+## Prerequisites
+
+- Node.js (v18 or higher)
+- MongoDB (local installation OR Docker)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Josenanodev/huellas-de-emi.git
+cd huellas-de-emi
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory (use `.env.example` as template):
+```env
+MONGODB_URI=mongodb://localhost:27017/huellas-de-emi
+PORT=4321
+ADMIN_PASSWORD=your_secure_password
+```
+
+4. Start MongoDB:
+
+   **Option A: Using Docker (recommended)**
+   ```bash
+   docker-compose up -d
+   ```
+
+   **Option B: Using local MongoDB**
+   Make sure MongoDB is installed and running on your system.
+
+5. (Optional) Seed the database with sample data:
+```bash
+node server/seed.js
+```
+
+## Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:4321`
+
+## Usage
+
+### For Visitors
+
+1. Visit the homepage to browse all available dogs
+2. Click on any dog to view detailed information
+3. Fill out the contact form to express interest in adoption (if the dog is available)
+
+### For Administrators
+
+1. Navigate to `/admin`
+2. Enter the admin password (set in `.env` file as `ADMIN_PASSWORD`)
+3. Use the admin panel to:
+   - Add new dogs with complete information
+   - Edit existing dog profiles
+   - Update adoption status
+   - Remove dogs from the listing
+
+**Note**: The admin authentication is basic and intended for demonstration. For production use, implement proper authentication with hashed passwords and session management.
+
+## API Endpoints
+
+- `GET /api/dogs` - Get all dogs
+- `GET /api/dogs/:id` - Get single dog by ID
+- `POST /api/dogs` - Create new dog (requires admin auth)
+- `PUT /api/dogs/:id` - Update dog (requires admin auth)
+- `DELETE /api/dogs/:id` - Delete dog (requires admin auth)
+- `POST /api/contact` - Submit contact form
+
+## Building for Production
+
+```bash
+npm run build
+npm run preview
+```
+
+## Security Considerations
+
+⚠️ **Important**: This application includes basic security measures but is designed for demonstration purposes. Before deploying to production, please implement the following security enhancements:
+
+### Authentication
+- The current admin authentication uses plain-text password comparison in sessionStorage
+- **Recommendation**: Implement proper authentication with:
+  - Bcrypt for password hashing
+  - JWT tokens or secure session management
+  - HTTP-only cookies instead of sessionStorage
+  - Rate limiting to prevent brute force attacks
+
+### Input Validation
+- Basic validation is implemented for contact forms and dog data
+- **Recommendation**: Add comprehensive validation using libraries like:
+  - Joi or Yup for schema validation
+  - express-validator for Express routes
+  - Sanitize all user inputs to prevent XSS attacks
+
+### Additional Security Measures
+- Use HTTPS in production
+- Implement CSRF protection
+- Add security headers (helmet.js)
+- Set up proper CORS policies
+- Regular dependency updates and security audits
+- Environment variable protection
+
+### Database Security
+- Use MongoDB authentication in production
+- Implement proper backup strategies
+- Use connection pooling and proper error handling
+- Never expose MongoDB port directly to the internet
+
+## Docker Commands
+
+Start MongoDB:
+```bash
+docker-compose up -d
+```
+
+Stop MongoDB:
+```bash
+docker-compose down
+```
+
+Stop MongoDB and remove data:
+```bash
+docker-compose down -v
+```
+
+## Project Structure
+
+```
+huellas-de-emi/
+├── public/
+│   ├── images/          # Public images
+│   └── styles/          # Global CSS
+├── server/
+│   ├── models/          # MongoDB models
+│   ├── routes/          # Express routes
+│   ├── middleware/      # Express middleware
+│   └── index.js         # Express app configuration
+├── src/
+│   ├── layouts/         # Astro layouts
+│   └── pages/           # Astro pages and API routes
+│       ├── api/         # API integration
+│       ├── dog/         # Dog detail pages
+│       ├── index.astro  # Homepage
+│       └── admin.astro  # Admin panel
+├── astro.config.mjs     # Astro configuration
+├── tsconfig.json        # TypeScript configuration
+└── package.json         # Dependencies and scripts
+```
+
+## License
+
+ISC
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+

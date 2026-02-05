@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: huellas-de-emi-db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: huellas-de-emi
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - huellas-network
+
+networks:
+  huellas-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
