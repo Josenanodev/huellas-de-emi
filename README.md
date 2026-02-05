@@ -28,7 +28,7 @@ Website for a dog shelter to promote adoptions and donations. Built as a fullsta
 ## Prerequisites
 
 - Node.js (v18 or higher)
-- MongoDB (local or remote instance)
+- MongoDB (local installation OR Docker)
 
 ## Installation
 
@@ -50,7 +50,20 @@ PORT=4321
 ADMIN_PASSWORD=your_secure_password
 ```
 
-4. Make sure MongoDB is running on your system.
+4. Start MongoDB:
+
+   **Option A: Using Docker (recommended)**
+   ```bash
+   docker-compose up -d
+   ```
+
+   **Option B: Using local MongoDB**
+   Make sure MongoDB is installed and running on your system.
+
+5. (Optional) Seed the database with sample data:
+```bash
+node server/seed.js
+```
 
 ## Development
 
@@ -68,17 +81,19 @@ The application will be available at `http://localhost:4321`
 
 1. Visit the homepage to browse all available dogs
 2. Click on any dog to view detailed information
-3. Fill out the contact form to express interest in adoption
+3. Fill out the contact form to express interest in adoption (if the dog is available)
 
 ### For Administrators
 
 1. Navigate to `/admin`
-2. Enter the admin password (set in `.env` file)
+2. Enter the admin password (set in `.env` file as `ADMIN_PASSWORD`)
 3. Use the admin panel to:
    - Add new dogs with complete information
    - Edit existing dog profiles
    - Update adoption status
    - Remove dogs from the listing
+
+**Note**: The admin authentication is basic and intended for demonstration. For production use, implement proper authentication with hashed passwords and session management.
 
 ## API Endpoints
 
@@ -94,6 +109,23 @@ The application will be available at `http://localhost:4321`
 ```bash
 npm run build
 npm run preview
+```
+
+## Docker Commands
+
+Start MongoDB:
+```bash
+docker-compose up -d
+```
+
+Stop MongoDB:
+```bash
+docker-compose down
+```
+
+Stop MongoDB and remove data:
+```bash
+docker-compose down -v
 ```
 
 ## Project Structure
