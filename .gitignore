@@ -144,6 +144,3 @@ vite.config.ts.timestamp-*
 # Uploaded images
 public/uploads/*
 !public/uploads/.gitkeep
-
-#amplify
-.amplify-hosting/
