@@ -213,8 +213,9 @@ main {
 }
 
 .status-available {
-  background-color: var(--status-available);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--status-available);
+  border: 1px solid var(--status-available);
 }
 
 .status-available::before {
@@ -222,33 +223,33 @@ main {
 }
 
 .status-adopted {
-  background-color: var(--status-adopted);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--status-adopted);
+  border: 1px solid var(--status-adopted);
 }
 
 .status-adopted::before {
   background-image: url('/images/heart.svg');
-  filter: brightness(0) invert(1);
 }
 
 .status-in_treatment {
-  background-color: var(--status-in-treatment);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--status-in-treatment);
+  border: 1px solid var(--status-in-treatment);
 }
 
 .status-in_treatment::before {
   background-image: url('/images/medical.svg');
-  filter: brightness(0) invert(1);
 }
 
 .status-reserved {
-  background-color: var(--status-reserved);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--status-reserved);
+  border: 1px solid var(--status-reserved);
 }
 
 .status-reserved::before {
   background-image: url('/images/clock.svg');
-  filter: brightness(0) invert(1);
 }
 
 .btn {
@@ -322,6 +323,12 @@ main {
 
 /* Forms */
 .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group-row {
+  display: flex;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 

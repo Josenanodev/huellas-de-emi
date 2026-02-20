@@ -1,11 +1,14 @@
 import type { APIContext } from 'astro';
 
 export function checkAdmin(context: APIContext): boolean {
-  const adminPassword = context.request.headers.get('x-admin-password');
-  
-  if (adminPassword !== process.env.ADMIN_PASSWORD) {
+  const adminPassword = context.request.headers.get('x-admin-password')?.trim();
+  const expectedPassword =
+    process.env.SECRET_ADMIN_PASSWORD?.trim() ||
+    import.meta.env.SECRET_ADMIN_PASSWORD?.trim();
+
+  if (!adminPassword || !expectedPassword) {
     return false;
   }
-  
-  return true;
+
+  return adminPassword === expectedPassword;
 }

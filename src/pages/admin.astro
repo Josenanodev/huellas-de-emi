@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Admin">
@@ -14,35 +14,35 @@ import Layout from '../layouts/Layout.astro';
         <button id="login-btn" class="btn">Iniciar Sesión</button>
         <div id="auth-message"></div>
       </div>
-      
+
       <div id="admin-panel" style="display: none;">
         <div class="admin-header">
           <h1>Gestionar Perros</h1>
           <button id="logout-btn" class="btn btn-secondary">Cerrar Sesión</button>
         </div>
-        
+
         <div id="admin-message"></div>
-        
+
         <div id="dog-form-section">
           <h2 id="form-title">Agregar Nuevo Perro</h2>
           <form id="dog-form">
             <input type="hidden" id="dog-id" />
-            
+
             <div class="form-group">
               <label for="name">Nombre *</label>
               <input type="text" id="name" name="name" required />
             </div>
-            
+
             <div class="form-group">
               <label for="breed">Raza *</label>
               <input type="text" id="breed" name="breed" required />
             </div>
-            
+
             <div class="form-group">
               <label for="age">Edad (años) *</label>
               <input type="number" id="age" name="age" min="0" required />
             </div>
-            
+
             <div class="form-group">
               <label for="gender">Género *</label>
               <select id="gender" name="gender" required>
@@ -51,7 +51,7 @@ import Layout from '../layouts/Layout.astro';
                 <option value="female">Hembra</option>
               </select>
             </div>
-            
+
             <div class="form-group">
               <label for="size">Tamaño *</label>
               <select id="size" name="size" required>
@@ -61,7 +61,7 @@ import Layout from '../layouts/Layout.astro';
                 <option value="large">Grande</option>
               </select>
             </div>
-            
+
             <div class="form-group">
               <label for="status">Estado *</label>
               <select id="status" name="status" required>
@@ -71,62 +71,87 @@ import Layout from '../layouts/Layout.astro';
                 <option value="adopted">Adoptado</option>
               </select>
             </div>
-            
+
             <div class="form-group">
               <label for="description">Descripción *</label>
               <textarea id="description" name="description" required></textarea>
             </div>
-            
+
             <div class="form-group">
               <label for="personality">Personalidad</label>
               <textarea id="personality" name="personality"></textarea>
             </div>
-            
+
             <div class="form-group">
               <label for="specialCare">Cuidados Especiales</label>
               <textarea id="specialCare" name="specialCare"></textarea>
             </div>
-            
+
             <div class="form-group">
-              <label for="healthConditions">Condiciones de Salud (separadas por coma)</label>
-              <input type="text" id="healthConditions" name="healthConditions" placeholder="Ej: Displasia, Artritis" />
+              <label for="healthConditions"
+                >Condiciones de Salud (separadas por coma)</label
+              >
+              <input
+                type="text"
+                id="healthConditions"
+                name="healthConditions"
+                placeholder="Ej: Displasia, Artritis"
+              />
             </div>
-            
-            <div class="form-group">
+
+            <div class="form-group-row">
               <label>
                 <input type="checkbox" id="vaccinated" name="vaccinated" />
                 Vacunado
               </label>
             </div>
-            
-            <div class="form-group">
+
+            <div class="form-group-row">
               <label>
                 <input type="checkbox" id="sterilized" name="sterilized" />
                 Esterilizado
               </label>
             </div>
-            
+
             <div class="form-group">
               <label for="images">URLs de Imágenes (separadas por coma)</label>
-              <input type="text" id="images" name="images" placeholder="Ej: http://ejemplo.com/img1.jpg, http://ejemplo.com/img2.jpg" />
+              <input
+                type="text"
+                id="images"
+                name="images"
+                placeholder="Ej: http://ejemplo.com/img1.jpg, http://ejemplo.com/img2.jpg"
+              />
             </div>
 
             <div class="form-group">
               <label for="image-files">O Subir Imágenes desde tu Computadora</label>
-              <input type="file" id="image-files" accept="image/jpeg,image/jpg,image/png,image/webp" multiple />
-              <small style="display: block; margin-top: 0.5rem; color: var(--primary-dark);">
+              <input
+                type="file"
+                id="image-files"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+              />
+              <small
+                style="display: block; margin-top: 0.5rem; color: var(--primary-dark);"
+              >
                 Formatos permitidos: JPG, PNG, WebP. Tamaño máximo: 5MB por imagen.
               </small>
-              <div id="image-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 1rem;"></div>
+              <div
+                id="image-preview"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 1rem;"
+              >
+              </div>
             </div>
-            
+
             <div class="form-actions">
               <button type="submit" class="btn" id="submit-btn">Guardar</button>
-              <button type="button" class="btn btn-secondary" id="cancel-btn">Cancelar</button>
+              <button type="button" class="btn btn-secondary" id="cancel-btn"
+                >Cancelar</button
+              >
             </div>
           </form>
         </div>
-        
+
         <div style="margin-top: 3rem;">
           <h2>Lista de Perros</h2>
           <ul class="dogs-list" id="dogs-list">
@@ -139,28 +164,28 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  let adminPassword = '';
+  let adminPassword = "";
 
-  const loginSection = document.getElementById('login-section');
-  const adminPanel = document.getElementById('admin-panel');
-  const loginBtn = document.getElementById('login-btn');
-  const logoutBtn = document.getElementById('logout-btn');
-  const passwordInput = document.getElementById('admin-password') as HTMLInputElement;
-  const authMessage = document.getElementById('auth-message');
-  const adminMessage = document.getElementById('admin-message');
-  const dogForm = document.getElementById('dog-form') as HTMLFormElement;
-  const dogsList = document.getElementById('dogs-list');
-  const formTitle = document.getElementById('form-title');
-  const dogIdInput = document.getElementById('dog-id') as HTMLInputElement;
-  const cancelBtn = document.getElementById('cancel-btn');
-  const imageFilesInput = document.getElementById('image-files') as HTMLInputElement;
-  const imagePreview = document.getElementById('image-preview');
+  const loginSection = document.getElementById("login-section");
+  const adminPanel = document.getElementById("admin-panel");
+  const loginBtn = document.getElementById("login-btn");
+  const logoutBtn = document.getElementById("logout-btn");
+  const passwordInput = document.getElementById("admin-password") as HTMLInputElement;
+  const authMessage = document.getElementById("auth-message");
+  const adminMessage = document.getElementById("admin-message");
+  const dogForm = document.getElementById("dog-form") as HTMLFormElement;
+  const dogsList = document.getElementById("dogs-list");
+  const formTitle = document.getElementById("form-title");
+  const dogIdInput = document.getElementById("dog-id") as HTMLInputElement;
+  const cancelBtn = document.getElementById("cancel-btn");
+  const imageFilesInput = document.getElementById("image-files") as HTMLInputElement;
+  const imagePreview = document.getElementById("image-preview");
 
   // Image preview functionality
-  imageFilesInput?.addEventListener('change', () => {
+  imageFilesInput?.addEventListener("change", () => {
     if (!imagePreview) return;
 
-    imagePreview.innerHTML = '';
+    imagePreview.innerHTML = "";
     const files = imageFilesInput.files;
 
     if (files) {
@@ -169,88 +194,96 @@ import Layout from '../layouts/Layout.astro';
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          const img = document.createElement('img');
+          const img = document.createElement("img");
           img.src = e.target?.result as string;
-          img.style.width = '100%';
-          img.style.height = '100px';
-          img.style.objectFit = 'cover';
-          img.style.borderRadius = '4px';
-          img.style.border = '2px solid var(--border)';
+          img.style.width = "100%";
+          img.style.height = "100px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "4px";
+          img.style.border = "2px solid var(--border)";
           imagePreview.appendChild(img);
         };
 
-        reader.readAsDataURL(file);
+        if (file) reader.readAsDataURL(file);
       }
     }
   });
 
   // Check if already logged in
-  const savedPassword = sessionStorage.getItem('adminPassword');
+  const savedPassword = sessionStorage.getItem("adminPassword");
   if (savedPassword) {
     adminPassword = savedPassword;
     showAdminPanel();
   }
 
-  loginBtn?.addEventListener('click', () => {
+  loginBtn?.addEventListener("click", () => {
     adminPassword = passwordInput.value;
     if (adminPassword) {
-      sessionStorage.setItem('adminPassword', adminPassword);
+      sessionStorage.setItem("adminPassword", adminPassword);
       showAdminPanel();
     } else {
-      showAuthMessage('Por favor ingrese una contraseña', 'error');
+      showAuthMessage("Por favor ingrese una contraseña", "error");
     }
   });
 
-  logoutBtn?.addEventListener('click', () => {
-    adminPassword = '';
-    sessionStorage.removeItem('adminPassword');
+  logoutBtn?.addEventListener("click", () => {
+    adminPassword = "";
+    sessionStorage.removeItem("adminPassword");
     if (loginSection && adminPanel) {
-      loginSection.style.display = 'block';
-      adminPanel.style.display = 'none';
+      loginSection.style.display = "block";
+      adminPanel.style.display = "none";
     }
-    if (passwordInput) passwordInput.value = '';
+    if (passwordInput) passwordInput.value = "";
   });
 
   function showAdminPanel() {
     if (loginSection && adminPanel) {
-      loginSection.style.display = 'none';
-      adminPanel.style.display = 'block';
+      loginSection.style.display = "none";
+      adminPanel.style.display = "block";
     }
     loadDogs();
   }
 
-  function showAuthMessage(message: string, type: 'success' | 'error') {
+  function showAuthMessage(message: string, type: "success" | "error") {
     if (authMessage) {
       authMessage.className = type;
       authMessage.textContent = message;
     }
   }
 
-  function showAdminMessage(message: string, type: 'success' | 'error') {
+  function showAdminMessage(message: string, type: "success" | "error") {
     if (adminMessage) {
       adminMessage.className = type;
       adminMessage.textContent = message;
       setTimeout(() => {
-        adminMessage.textContent = '';
-        adminMessage.className = '';
+        adminMessage.textContent = "";
+        adminMessage.className = "";
       }, 3000);
     }
   }
 
   async function loadDogs() {
     try {
-      const response = await fetch('/api/dogs');
+      const response = await fetch("/api/dogs");
       const dogs = await response.json();
 
       if (dogsList) {
-        dogsList.innerHTML = dogs.map((dog: any) => `
+        dogsList.innerHTML = dogs
+          .map(
+            (dog: any) => `
           <li>
             <div>
               <strong>${dog.name}</strong> - ${dog.breed} -
               <span class="dog-status status-${dog.status}">
-                ${dog.status === 'available' ? 'Disponible' :
-                  dog.status === 'adopted' ? 'Adoptado' :
-                  dog.status === 'in_treatment' ? 'En Tratamiento' : 'Reservado'}
+                ${
+                  dog.status === "available"
+                    ? "Disponible"
+                    : dog.status === "adopted"
+                      ? "Adoptado"
+                      : dog.status === "in_treatment"
+                        ? "En Tratamiento"
+                        : "Reservado"
+                }
               </span>
             </div>
             <div class="dog-actions">
@@ -258,14 +291,16 @@ import Layout from '../layouts/Layout.astro';
               <button class="btn btn-danger" onclick="deleteDog('${dog._id}')">Eliminar</button>
             </div>
           </li>
-        `).join('');
+        `,
+          )
+          .join("");
       }
     } catch (error) {
-      showAdminMessage('Error al cargar los perros', 'error');
+      showAdminMessage("Error al cargar los perros", "error");
     }
   }
 
-  dogForm?.addEventListener('submit', async (e) => {
+  dogForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData(dogForm);
@@ -278,14 +313,15 @@ import Layout from '../layouts/Layout.astro';
     if (imageFiles && imageFiles.length > 0) {
       const uploadFormData = new FormData();
       for (let i = 0; i < imageFiles.length; i++) {
-        uploadFormData.append('images', imageFiles[i]);
+        const file = imageFiles[i];
+        if (file) uploadFormData.append("images", file);
       }
 
       try {
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
           headers: {
-            'X-Admin-Password': adminPassword,
+            "X-Admin-Password": adminPassword,
           },
           body: uploadFormData,
         });
@@ -295,24 +331,30 @@ import Layout from '../layouts/Layout.astro';
           uploadedUrls = result.urls || [];
         } else {
           const error = await uploadResponse.json();
-          showAdminMessage(error.error || 'Error al subir imágenes', 'error');
+          showAdminMessage(error.error || "Error al subir imágenes", "error");
           return;
         }
       } catch (error) {
-        showAdminMessage('Error al subir imágenes', 'error');
+        showAdminMessage("Error al subir imágenes", "error");
         return;
       }
     }
 
     formData.forEach((value, key) => {
-      if (key === 'healthConditions' && value) {
-        data[key] = (value as string).split(',').map(s => s.trim()).filter(s => s);
-      } else if (key === 'images' && value) {
-        const urlImages = (value as string).split(',').map(s => s.trim()).filter(s => s);
+      if (key === "healthConditions" && value) {
+        data[key] = (value as string)
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
+      } else if (key === "images" && value) {
+        const urlImages = (value as string)
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
         data[key] = [...urlImages, ...uploadedUrls];
-      } else if (key === 'vaccinated' || key === 'sterilized') {
+      } else if (key === "vaccinated" || key === "sterilized") {
         data[key] = (document.getElementById(key) as HTMLInputElement).checked;
-      } else if (key === 'age') {
+      } else if (key === "age") {
         data[key] = parseInt(value as string);
       } else {
         data[key] = value;
@@ -325,40 +367,43 @@ import Layout from '../layouts/Layout.astro';
     }
 
     const dogId = dogIdInput.value;
-    const url = dogId ? `/api/dogs/${dogId}` : '/api/dogs';
-    const method = dogId ? 'PUT' : 'POST';
+    const url = dogId ? `/api/dogs/${dogId}` : "/api/dogs";
+    const method = dogId ? "PUT" : "POST";
 
     try {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Password': adminPassword,
+          "Content-Type": "application/json",
+          "X-Admin-Password": adminPassword,
         },
         body: JSON.stringify(data),
       });
 
       if (response.ok) {
-        showAdminMessage(dogId ? 'Perro actualizado correctamente' : 'Perro agregado correctamente', 'success');
+        showAdminMessage(
+          dogId ? "Perro actualizado correctamente" : "Perro agregado correctamente",
+          "success",
+        );
         dogForm.reset();
-        dogIdInput.value = '';
-        if (imagePreview) imagePreview.innerHTML = '';
-        if (formTitle) formTitle.textContent = 'Agregar Nuevo Perro';
+        dogIdInput.value = "";
+        if (imagePreview) imagePreview.innerHTML = "";
+        if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
         loadDogs();
       } else {
         const error = await response.json();
-        showAdminMessage(error.error || 'Error al guardar el perro', 'error');
+        showAdminMessage(error.error || "Error al guardar el perro", "error");
       }
     } catch (error) {
-      showAdminMessage('Error al guardar el perro', 'error');
+      showAdminMessage("Error al guardar el perro", "error");
     }
   });
 
-  cancelBtn?.addEventListener('click', () => {
+  cancelBtn?.addEventListener("click", () => {
     dogForm.reset();
-    dogIdInput.value = '';
-    if (imagePreview) imagePreview.innerHTML = '';
-    if (formTitle) formTitle.textContent = 'Agregar Nuevo Perro';
+    dogIdInput.value = "";
+    if (imagePreview) imagePreview.innerHTML = "";
+    if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
   });
 
   (window as any).editDog = async (id: string) => {
@@ -367,49 +412,56 @@ import Layout from '../layouts/Layout.astro';
       const dog = await response.json();
 
       dogIdInput.value = dog._id;
-      (document.getElementById('name') as HTMLInputElement).value = dog.name;
-      (document.getElementById('breed') as HTMLInputElement).value = dog.breed;
-      (document.getElementById('age') as HTMLInputElement).value = dog.age;
-      (document.getElementById('gender') as HTMLSelectElement).value = dog.gender;
-      (document.getElementById('size') as HTMLSelectElement).value = dog.size;
-      (document.getElementById('status') as HTMLSelectElement).value = dog.status;
-      (document.getElementById('description') as HTMLTextAreaElement).value = dog.description;
-      (document.getElementById('personality') as HTMLTextAreaElement).value = dog.personality || '';
-      (document.getElementById('specialCare') as HTMLTextAreaElement).value = dog.specialCare || '';
-      (document.getElementById('healthConditions') as HTMLInputElement).value = dog.healthConditions.join(', ');
-      (document.getElementById('vaccinated') as HTMLInputElement).checked = dog.vaccinated;
-      (document.getElementById('sterilized') as HTMLInputElement).checked = dog.sterilized;
-      (document.getElementById('images') as HTMLInputElement).value = dog.images.join(', ');
+      (document.getElementById("name") as HTMLInputElement).value = dog.name;
+      (document.getElementById("breed") as HTMLInputElement).value = dog.breed;
+      (document.getElementById("age") as HTMLInputElement).value = dog.age;
+      (document.getElementById("gender") as HTMLSelectElement).value = dog.gender;
+      (document.getElementById("size") as HTMLSelectElement).value = dog.size;
+      (document.getElementById("status") as HTMLSelectElement).value = dog.status;
+      (document.getElementById("description") as HTMLTextAreaElement).value =
+        dog.description;
+      (document.getElementById("personality") as HTMLTextAreaElement).value =
+        dog.personality || "";
+      (document.getElementById("specialCare") as HTMLTextAreaElement).value =
+        dog.specialCare || "";
+      (document.getElementById("healthConditions") as HTMLInputElement).value =
+        dog.healthConditions.join(", ");
+      (document.getElementById("vaccinated") as HTMLInputElement).checked =
+        dog.vaccinated;
+      (document.getElementById("sterilized") as HTMLInputElement).checked =
+        dog.sterilized;
+      (document.getElementById("images") as HTMLInputElement).value =
+        dog.images.join(", ");
 
-      if (formTitle) formTitle.textContent = 'Editar Perro';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (formTitle) formTitle.textContent = "Editar Perro";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
-      showAdminMessage('Error al cargar el perro', 'error');
+      showAdminMessage("Error al cargar el perro", "error");
     }
   };
 
   (window as any).deleteDog = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este perro?')) {
+    if (!confirm("¿Estás seguro de que quieres eliminar este perro?")) {
       return;
     }
 
     try {
       const response = await fetch(`/api/dogs/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'X-Admin-Password': adminPassword,
+          "X-Admin-Password": adminPassword,
         },
       });
 
       if (response.ok) {
-        showAdminMessage('Perro eliminado correctamente', 'success');
+        showAdminMessage("Perro eliminado correctamente", "success");
         loadDogs();
       } else {
         const error = await response.json();
-        showAdminMessage(error.error || 'Error al eliminar el perro', 'error');
+        showAdminMessage(error.error || "Error al eliminar el perro", "error");
       }
     } catch (error) {
-      showAdminMessage('Error al eliminar el perro', 'error');
+      showAdminMessage("Error al eliminar el perro", "error");
     }
   };
 </script>
