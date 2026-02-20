@@ -50,49 +50,49 @@ try {
             
             <div class="info-grid">
               <div class="info-item">
-                <strong>Raza</strong>
+                <strong>🐕 Raza</strong>
                 {dog.breed}
               </div>
               <div class="info-item">
-                <strong>Edad</strong>
+                <strong>🎂 Edad</strong>
                 {dog.age} {dog.age === 1 ? 'año' : 'años'}
               </div>
               <div class="info-item">
-                <strong>Género</strong>
+                <strong>⚥ Género</strong>
                 {dog.gender === 'male' ? 'Macho' : 'Hembra'}
               </div>
               <div class="info-item">
-                <strong>Tamaño</strong>
+                <strong>📏 Tamaño</strong>
                 {dog.size === 'small' && 'Pequeño'}
                 {dog.size === 'medium' && 'Mediano'}
                 {dog.size === 'large' && 'Grande'}
               </div>
               <div class="info-item">
-                <strong>Vacunado</strong>
-                {dog.vaccinated ? 'Sí' : 'No'}
+                <strong>💉 Vacunado</strong>
+                {dog.vaccinated ? '✅ Sí' : '❌ No'}
               </div>
               <div class="info-item">
-                <strong>Esterilizado</strong>
-                {dog.sterilized ? 'Sí' : 'No'}
+                <strong>✂️ Esterilizado</strong>
+                {dog.sterilized ? '✅ Sí' : '❌ No'}
               </div>
             </div>
           </div>
         </div>
         
         <div>
-          <h2>Sobre {dog.name}</h2>
+          <h2>📖 Sobre {dog.name}</h2>
           <p>{dog.description}</p>
-          
+
           {dog.personality && (
             <div>
-              <h3>Personalidad</h3>
+              <h3>✨ Personalidad</h3>
               <p>{dog.personality}</p>
             </div>
           )}
-          
+
           {dog.healthConditions.length > 0 && (
             <div>
-              <h3>Condiciones de Salud</h3>
+              <h3>🏥 Condiciones de Salud</h3>
               <ul>
                 {dog.healthConditions.map((condition: string) => (
                   <li>{condition}</li>
@@ -100,24 +100,24 @@ try {
               </ul>
             </div>
           )}
-          
+
           {dog.specialCare && (
             <div>
-              <h3>Cuidados Especiales</h3>
+              <h3>💊 Cuidados Especiales</h3>
               <p>{dog.specialCare}</p>
             </div>
           )}
         </div>
-        
+
         {dog.status === 'available' && (
           <div class="contact-section">
-            <h2>¿Interesado en adoptar a {dog.name}?</h2>
+            <h2>💌 ¿Interesado en adoptar a {dog.name}?</h2>
             <p>Contáctanos por WhatsApp para más información sobre la adopción.</p>
-            <a 
+            <a
               href={`https://wa.me/+523313296314?text=Hola, me gustaría obtener más información sobre la adopción de ${dog.name}.`}
               target="_blank"
               rel="noopener noreferrer"
-              class="btn"
+              class="btn whatsapp-btn"
             >
               💬 Enviar por WhatsApp
             </a>

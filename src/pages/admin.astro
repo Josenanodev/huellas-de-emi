@@ -110,6 +110,15 @@ import Layout from '../layouts/Layout.astro';
               <label for="images">URLs de Imágenes (separadas por coma)</label>
               <input type="text" id="images" name="images" placeholder="Ej: http://ejemplo.com/img1.jpg, http://ejemplo.com/img2.jpg" />
             </div>
+
+            <div class="form-group">
+              <label for="image-files">O Subir Imágenes desde tu Computadora</label>
+              <input type="file" id="image-files" accept="image/jpeg,image/jpg,image/png,image/webp" multiple />
+              <small style="display: block; margin-top: 0.5rem; color: var(--primary-dark);">
+                Formatos permitidos: JPG, PNG, WebP. Tamaño máximo: 5MB por imagen.
+              </small>
+              <div id="image-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 1rem;"></div>
+            </div>
             
             <div class="form-actions">
               <button type="submit" class="btn" id="submit-btn">Guardar</button>
@@ -131,7 +140,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   let adminPassword = '';
-  
+
   const loginSection = document.getElementById('login-section');
   const adminPanel = document.getElementById('admin-panel');
   const loginBtn = document.getElementById('login-btn');
@@ -144,14 +153,44 @@ import Layout from '../layouts/Layout.astro';
   const formTitle = document.getElementById('form-title');
   const dogIdInput = document.getElementById('dog-id') as HTMLInputElement;
   const cancelBtn = document.getElementById('cancel-btn');
-  
+  const imageFilesInput = document.getElementById('image-files') as HTMLInputElement;
+  const imagePreview = document.getElementById('image-preview');
+
+  // Image preview functionality
+  imageFilesInput?.addEventListener('change', () => {
+    if (!imagePreview) return;
+
+    imagePreview.innerHTML = '';
+    const files = imageFilesInput.files;
+
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target?.result as string;
+          img.style.width = '100%';
+          img.style.height = '100px';
+          img.style.objectFit = 'cover';
+          img.style.borderRadius = '4px';
+          img.style.border = '2px solid var(--border)';
+          imagePreview.appendChild(img);
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
   // Check if already logged in
   const savedPassword = sessionStorage.getItem('adminPassword');
   if (savedPassword) {
     adminPassword = savedPassword;
     showAdminPanel();
   }
-  
+
   loginBtn?.addEventListener('click', () => {
     adminPassword = passwordInput.value;
     if (adminPassword) {
@@ -161,7 +200,7 @@ import Layout from '../layouts/Layout.astro';
       showAuthMessage('Por favor ingrese una contraseña', 'error');
     }
   });
-  
+
   logoutBtn?.addEventListener('click', () => {
     adminPassword = '';
     sessionStorage.removeItem('adminPassword');
@@ -171,7 +210,7 @@ import Layout from '../layouts/Layout.astro';
     }
     if (passwordInput) passwordInput.value = '';
   });
-  
+
   function showAdminPanel() {
     if (loginSection && adminPanel) {
       loginSection.style.display = 'none';
@@ -179,14 +218,14 @@ import Layout from '../layouts/Layout.astro';
     }
     loadDogs();
   }
-  
+
   function showAuthMessage(message: string, type: 'success' | 'error') {
     if (authMessage) {
       authMessage.className = type;
       authMessage.textContent = message;
     }
   }
-  
+
   function showAdminMessage(message: string, type: 'success' | 'error') {
     if (adminMessage) {
       adminMessage.className = type;
@@ -197,20 +236,20 @@ import Layout from '../layouts/Layout.astro';
       }, 3000);
     }
   }
-  
+
   async function loadDogs() {
     try {
       const response = await fetch('/api/dogs');
       const dogs = await response.json();
-      
+
       if (dogsList) {
         dogsList.innerHTML = dogs.map((dog: any) => `
           <li>
             <div>
-              <strong>${dog.name}</strong> - ${dog.breed} - 
+              <strong>${dog.name}</strong> - ${dog.breed} -
               <span class="dog-status status-${dog.status}">
-                ${dog.status === 'available' ? 'Disponible' : 
-                  dog.status === 'adopted' ? 'Adoptado' : 
+                ${dog.status === 'available' ? 'Disponible' :
+                  dog.status === 'adopted' ? 'Adoptado' :
                   dog.status === 'in_treatment' ? 'En Tratamiento' : 'Reservado'}
               </span>
             </div>
@@ -225,18 +264,52 @@ import Layout from '../layouts/Layout.astro';
       showAdminMessage('Error al cargar los perros', 'error');
     }
   }
-  
+
   dogForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(dogForm);
     const data: any = {};
-    
+
+    // First, handle file uploads if any
+    let uploadedUrls: string[] = [];
+    const imageFiles = imageFilesInput?.files;
+
+    if (imageFiles && imageFiles.length > 0) {
+      const uploadFormData = new FormData();
+      for (let i = 0; i < imageFiles.length; i++) {
+        uploadFormData.append('images', imageFiles[i]);
+      }
+
+      try {
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'X-Admin-Password': adminPassword,
+          },
+          body: uploadFormData,
+        });
+
+        if (uploadResponse.ok) {
+          const result = await uploadResponse.json();
+          uploadedUrls = result.urls || [];
+        } else {
+          const error = await uploadResponse.json();
+          showAdminMessage(error.error || 'Error al subir imágenes', 'error');
+          return;
+        }
+      } catch (error) {
+        showAdminMessage('Error al subir imágenes', 'error');
+        return;
+      }
+    }
+
     formData.forEach((value, key) => {
       if (key === 'healthConditions' && value) {
         data[key] = (value as string).split(',').map(s => s.trim()).filter(s => s);
       } else if (key === 'images' && value) {
-        data[key] = (value as string).split(',').map(s => s.trim()).filter(s => s);
+        const urlImages = (value as string).split(',').map(s => s.trim()).filter(s => s);
+        data[key] = [...urlImages, ...uploadedUrls];
       } else if (key === 'vaccinated' || key === 'sterilized') {
         data[key] = (document.getElementById(key) as HTMLInputElement).checked;
       } else if (key === 'age') {
@@ -245,11 +318,16 @@ import Layout from '../layouts/Layout.astro';
         data[key] = value;
       }
     });
-    
+
+    // If no URL images but have uploaded images, set them
+    if ((!data.images || data.images.length === 0) && uploadedUrls.length > 0) {
+      data.images = uploadedUrls;
+    }
+
     const dogId = dogIdInput.value;
     const url = dogId ? `/api/dogs/${dogId}` : '/api/dogs';
     const method = dogId ? 'PUT' : 'POST';
-    
+
     try {
       const response = await fetch(url, {
         method,
@@ -259,11 +337,12 @@ import Layout from '../layouts/Layout.astro';
         },
         body: JSON.stringify(data),
       });
-      
+
       if (response.ok) {
         showAdminMessage(dogId ? 'Perro actualizado correctamente' : 'Perro agregado correctamente', 'success');
         dogForm.reset();
         dogIdInput.value = '';
+        if (imagePreview) imagePreview.innerHTML = '';
         if (formTitle) formTitle.textContent = 'Agregar Nuevo Perro';
         loadDogs();
       } else {
@@ -274,18 +353,19 @@ import Layout from '../layouts/Layout.astro';
       showAdminMessage('Error al guardar el perro', 'error');
     }
   });
-  
+
   cancelBtn?.addEventListener('click', () => {
     dogForm.reset();
     dogIdInput.value = '';
+    if (imagePreview) imagePreview.innerHTML = '';
     if (formTitle) formTitle.textContent = 'Agregar Nuevo Perro';
   });
-  
+
   (window as any).editDog = async (id: string) => {
     try {
       const response = await fetch(`/api/dogs/${id}`);
       const dog = await response.json();
-      
+
       dogIdInput.value = dog._id;
       (document.getElementById('name') as HTMLInputElement).value = dog.name;
       (document.getElementById('breed') as HTMLInputElement).value = dog.breed;
@@ -300,19 +380,19 @@ import Layout from '../layouts/Layout.astro';
       (document.getElementById('vaccinated') as HTMLInputElement).checked = dog.vaccinated;
       (document.getElementById('sterilized') as HTMLInputElement).checked = dog.sterilized;
       (document.getElementById('images') as HTMLInputElement).value = dog.images.join(', ');
-      
+
       if (formTitle) formTitle.textContent = 'Editar Perro';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       showAdminMessage('Error al cargar el perro', 'error');
     }
   };
-  
+
   (window as any).deleteDog = async (id: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar este perro?')) {
       return;
     }
-    
+
     try {
       const response = await fetch(`/api/dogs/${id}`, {
         method: 'DELETE',
@@ -320,7 +400,7 @@ import Layout from '../layouts/Layout.astro';
           'X-Admin-Password': adminPassword,
         },
       });
-      
+
       if (response.ok) {
         showAdminMessage('Perro eliminado correctamente', 'success');
         loadDogs();
