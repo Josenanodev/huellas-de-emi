@@ -4,6 +4,7 @@ export function checkAdmin(context: APIContext): boolean {
   const adminPassword = context.request.headers.get('x-admin-password')?.trim();
   const expectedPassword =
     process.env.SECRET_ADMIN_PASSWORD?.trim() ||
+    process.env.ADMIN_PASSWORD?.trim() ||
     import.meta.env.SECRET_ADMIN_PASSWORD?.trim();
 
   if (!adminPassword || !expectedPassword) {

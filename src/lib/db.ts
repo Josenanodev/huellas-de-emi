@@ -10,9 +10,13 @@ export async function connectDB() {
   try {
     const uri =
       process.env.SECRET_MONGODB_URI?.trim() ||
+      process.env.MONGODB_URI?.trim() ||
       import.meta.env.SECRET_MONGODB_URI?.trim();
+
     if (!uri) {
-      throw new Error('MongoDB URI is not defined in environment variables');
+      throw new Error(
+        'MongoDB URI is not defined. Set SECRET_MONGODB_URI (or MONGODB_URI) in environment variables.'
+      );
     }
     console.log('Connecting to MongoDB...');
     await mongoose.connect(uri);
