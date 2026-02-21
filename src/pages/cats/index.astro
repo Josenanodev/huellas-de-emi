@@ -1,0 +1,69 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import type { Cat } from "../../types";
+
+let cats: Cat[] = [];
+let errorMessage = '';
+
+try {
+  const catsApiUrl = new URL("/api/cats", Astro.url).toString();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  
+  const response = await fetch(catsApiUrl, { signal: controller.signal });
+  clearTimeout(timeoutId);
+  
+  const data: unknown = await response.json();
+  cats = Array.isArray(data) ? data : [];
+} catch (error) {
+  console.error("Failed to load cats on cats page:", error);
+  errorMessage = 'No se pudieron cargar los gatos en este momento. Por favor, intenta más tarde.';
+}
+---
+
+<Layout title="Gatos en Adopción">
+  <div class="container">
+    <h1>🐾 Gatos en Adopción</h1>
+    <p>Conoce a nuestros adorables gatos que están buscando un hogar lleno de amor.</p>
+
+    {errorMessage && (
+      <div style="padding: 1rem; background: #fee; border: 1px solid #c33; border-radius: 4px; margin: 1rem 0;">
+        <p style="margin: 0; color: #c33;">{errorMessage}</p>
+      </div>
+    )}
+
+    {
+      cats.length === 0 && !errorMessage ? (
+        <p>No hay gatos disponibles en este momento.</p>
+      ) : (
+        <div class="dogs-grid">
+          {cats.map((cat) => (
+            <div class="dog-card">
+              <img
+                src={cat.images[0] || "/images/default-dog.svg"}
+                alt={cat.name}
+                class="dog-image"
+              />
+              <div class="dog-info">
+                <h2 class="dog-name">{cat.name}</h2>
+                <p class="dog-breed">{cat.breed}</p>
+                <p>
+                  <span class={`dog-status status-${cat.status}`}>
+                    {cat.status === "available" && "Disponible"}
+                    {cat.status === "adopted" && "Adoptado"}
+                    {cat.status === "in_treatment" && "En Tratamiento"}
+                    {cat.status === "reserved" && "Reservado"}
+                  </span>
+                </p>
+                <p>{cat.description.substring(0, 100)}...</p>
+                <a href={`/cat/${cat._id}`} class="btn">
+                  Ver más
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</Layout>

@@ -436,6 +436,36 @@ main {
   margin-bottom: 2rem;
 }
 
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+
+.admin-tab {
+  padding: 0.6rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.admin-tab:hover {
+  color: var(--primary);
+}
+
+.admin-tab.active {
+  color: var(--text-strong);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
 .dogs-list {
   list-style: none;
 }
