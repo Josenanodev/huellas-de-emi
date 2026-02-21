@@ -123,6 +123,15 @@ import Layout from "../layouts/Layout.astro";
               />
             </div>
 
+            <div class="form-group" id="existing-images-section" style="display: none;">
+              <label>Imágenes Actuales</label>
+              <div
+                id="existing-images"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;"
+              >
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="image-files">O Subir Imágenes desde tu Computadora</label>
               <input
@@ -180,6 +189,10 @@ import Layout from "../layouts/Layout.astro";
   const cancelBtn = document.getElementById("cancel-btn");
   const imageFilesInput = document.getElementById("image-files") as HTMLInputElement;
   const imagePreview = document.getElementById("image-preview");
+  const existingImagesSection = document.getElementById("existing-images-section");
+  const existingImagesContainer = document.getElementById("existing-images");
+  
+  let currentDogImages: string[] = [];
 
   // Image preview functionality
   imageFilesInput?.addEventListener("change", () => {
@@ -305,15 +318,7 @@ import Layout from "../layouts/Layout.astro";
             <div>
               <strong>${dog.name}</strong> - ${dog.breed} -
               <span class="dog-status status-${dog.status}">
-                ${
-                  dog.status === "available"
-                    ? "Disponible"
-                    : dog.status === "adopted"
-                      ? "Adoptado"
-                      : dog.status === "in_treatment"
-                        ? "En Tratamiento"
-                        : "Reservado"
-                }
+                ${dog.status === "available" ? "Disponible" : dog.status === "adopted" ? "Adoptado" : dog.status === "in_treatment" ? "En Tratamiento" : "Reservado"}
               </span>
             </div>
             <div class="dog-actions">
@@ -382,7 +387,8 @@ import Layout from "../layouts/Layout.astro";
           .split(",")
           .map((s) => s.trim())
           .filter((s) => s);
-        data[key] = [...urlImages, ...uploadedUrls];
+        // Combine existing images (not deleted), URL images, and uploaded images
+        data[key] = [...currentDogImages, ...urlImages, ...uploadedUrls];
       } else if (key === "vaccinated" || key === "sterilized") {
         data[key] = (document.getElementById(key) as HTMLInputElement).checked;
       } else if (key === "age") {
@@ -392,9 +398,9 @@ import Layout from "../layouts/Layout.astro";
       }
     });
 
-    // If no URL images but have uploaded images, set them
-    if ((!data.images || data.images.length === 0) && uploadedUrls.length > 0) {
-      data.images = uploadedUrls;
+    // If no URL images but have existing or uploaded images, set them
+    if (!data.images || data.images.length === 0) {
+      data.images = [...currentDogImages, ...uploadedUrls];
     }
 
     const dogId = dogIdInput.value;
@@ -417,7 +423,10 @@ import Layout from "../layouts/Layout.astro";
           "success",
         );
         dogForm.reset();
-        dogIdInput.value = "";
+        currentDogImages = [];
+        if (imagePreview) imagePreview.innerHTML = "";
+        if (existingImagesSection) existingImagesSection.style.display = "none";
+        if (existingImagesContainer) existingImagesContainer
         if (imagePreview) imagePreview.innerHTML = "";
         if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
         loadDogs();
@@ -434,6 +443,9 @@ import Layout from "../layouts/Layout.astro";
     dogForm.reset();
     dogIdInput.value = "";
     if (imagePreview) imagePreview.innerHTML = "";
+    if (existingImagesSection) existingImagesSection.style.display = "none";
+    if (existingImagesContainer) existingImagesContainer.innerHTML = "";
+    currentDogImages = [];
     if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
   });
 
@@ -461,6 +473,62 @@ import Layout from "../layouts/Layout.astro";
         dog.vaccinated;
       (document.getElementById("sterilized") as HTMLInputElement).checked =
         dog.sterilized;
+      // Display existing images with delete buttons
+      currentDogImages = [...dog.images];
+      if (existingImagesSection && existingImagesContainer) {
+        existingImagesContainer.innerHTML = "";
+        if (currentDogImages.length > 0) {
+          existingImagesSection.style.display = "block";
+          currentDogImages.forEach((imageUrl: string, index: number) => {
+            const imageWrapper = document.createElement("div");
+            imageWrapper.style.position = "relative";
+            imageWrapper.style.border = "2px solid var(--border)";
+            imageWrapper.style.borderRadius = "4px";
+            imageWrapper.style.overflow = "hidden";
+
+            const img = document.createElement("img");
+            img.src = imageUrl;
+            img.style.width = "100%";
+            img.style.height = "120px";
+            img.style.objectFit = "cover";
+            img.style.display = "block";
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "×";
+            deleteBtn.type = "button";
+            deleteBtn.style.position = "absolute";
+            deleteBtn.style.top = "4px";
+            deleteBtn.style.right = "4px";
+            deleteBtn.style.background = "#c33";
+            deleteBtn.style.color = "white";
+            deleteBtn.style.border = "none";
+            deleteBtn.style.borderRadius = "50%";
+            deleteBtn.style.width = "24px";
+            deleteBtn.style.height = "24px";
+            deleteBtn.style.cursor = "pointer";
+            deleteBtn.style.fontSize = "18px";
+            deleteBtn.style.lineHeight = "1";
+            deleteBtn.style.display = "flex";
+            deleteBtn.style.alignItems = "center";
+            deleteBtn.style.justifyContent = "center";
+
+            deleteBtn.addEventListener("click", function() {
+              currentDogImages.splice(index, 1);
+              imageWrapper.remove();
+              if (currentDogImages.length === 0 && existingImagesSection) {
+                existingImagesSection.style.display = "none";
+              }
+            });
+
+            imageWrapper.appendChild(img);
+            imageWrapper.appendChild(deleteBtn);
+            existingImagesContainer.appendChild(imageWrapper);
+          });
+        } else {
+          existingImagesSection.style.display = "none";
+        }
+      }
+
       (document.getElementById("images") as HTMLInputElement).value =
         dog.images.join(", ");
 

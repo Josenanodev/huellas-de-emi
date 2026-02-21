@@ -1,10 +1,6 @@
 import type { APIRoute } from 'astro';
 import { checkAdmin } from '../../utils/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -27,12 +23,7 @@ export const POST: APIRoute = async (context) => {
       });
     }
 
-    // Ensure upload directory exists
-    if (!existsSync(UPLOAD_DIR)) {
-      await mkdir(UPLOAD_DIR, { recursive: true });
-    }
-
-    const uploadedUrls: string[] = [];
+    const uploadedDataUrls: string[] = [];
 
     for (const file of files) {
       if (!(file instanceof File)) {
@@ -65,26 +56,19 @@ export const POST: APIRoute = async (context) => {
         );
       }
 
-      // Generate unique filename
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 8);
-      const ext = path.extname(file.name);
-      const filename = `dog-${timestamp}-${randomStr}${ext}`;
-      const filepath = path.join(UPLOAD_DIR, filename);
-
-      // Save file
+      // Convert to base64 data URL
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      await writeFile(filepath, buffer);
-
-      // Store public URL
-      uploadedUrls.push(`/uploads/${filename}`);
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+      
+      uploadedDataUrls.push(dataUrl);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        urls: uploadedUrls,
+        urls: uploadedDataUrls,
       }),
       {
         status: 200,
