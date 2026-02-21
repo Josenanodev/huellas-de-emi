@@ -4,12 +4,13 @@ frontend:
         preBuild:
             commands:
                 - 'npm ci --cache .npm --prefer-offline'
+                - echo "SECRET_MONGODB_URI=$SECRET_MONGODB_URI" > .env
+                - echo "SECRET_ADMIN_PASSWORD=$SECRET_ADMIN_PASSWORD" >> .env
         build:
             commands:
-                - echo "SECRET_MONGODB_URI=$SECRET_MONGODB_URI" >> .env.production
-                - echo "SECRET_ADMIN_PASSWORD=$SECRET_ADMIN_PASSWORD" >> .env.production
                 - 'npm run build'
                 - 'mv node_modules ./.amplify-hosting/compute/default'
+                - 'cp .env ./.amplify-hosting/compute/default/.env || true'
     artifacts:
         baseDirectory: .amplify-hosting
         files:

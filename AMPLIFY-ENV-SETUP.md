@@ -4,8 +4,10 @@
 
 **For Amplify Hosting SSR apps (like this Astro project):**
 - ❌ **DO NOT use "Secrets"** (Hosting > Secrets) — these are for Amplify Gen 2 backend functions only
-- ✅ **USE "Environment variables"** (Hosting > Environment variables) — these are written to `.env.production` during build via `amplify.yml`
-- ✅ The `amplify.yml` config writes env vars to a file during build, making them available via `import.meta.env` at runtime
+- ✅ **USE "Environment variables"** (Hosting > Environment variables)
+- ✅ The `amplify.yml` writes env vars to `.env` during preBuild, then:
+  - Astro reads them at build time via `import.meta.env`
+  - The `.env` file is copied to Lambda compute for runtime loading via `src/lib/load-env.ts`
 
 ## Required Environment Variables
 
@@ -26,8 +28,13 @@ Set these in **AWS Amplify Console → Hosting → Environment variables**:
    - Variable name: `SECRET_MONGODB_URI`
    - Variable name: `SECRET_ADMIN_PASSWORD`
 6. Save changes
-7. **Redeploy** the branch (the `amplify.yml` will write these to `.env.production` during build)
-8. Check `/api/health` endpoint to verify (see Verification section below)
+7. **Redeploy** the branch
+8. Check build logs for:
+   ```
+   echo "SECRET_MONGODB_URI=$SECRET_MONGODB_URI" > .env
+   echo "SECRET_ADMIN_PASSWORD=$SECRET_ADMIN_PASSWORD" >> .env
+   ```
+9. After deploy, check `/api/health` endpoint (see Verification section)
 
 ## Verification
 
@@ -40,10 +47,11 @@ Expected response:
   "timestamp": "2026-02-20T...",
   "env": {,
     "mode": "production",
-    "ssr": true
-  }
-}
-```
+    "ssr": true:
+1. Check Amplify Console build logs for the `echo` commands writing to `.env`
+2. Verify variables are set under "Environment variables" (not Secrets)
+3. Check that `.env` file is being copied to compute: `cp .env ./.amplify-hosting/compute/default/.env`
+4. Ensure you redeployed AFTER setting variables
 
 If `hasMongoUri` or `hasAdminPassword` is `false`, the variables were not injected during build. Check:
 - Variables are set in Amplify Console under "Environment variables"

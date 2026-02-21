@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import '../lib/load-env';
 
 let isConnected = false;
 

@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import '../../lib/load-env';
 
 export const GET: APIRoute = async () => {
   const health = {
