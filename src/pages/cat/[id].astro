@@ -1,0 +1,133 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import type { Cat } from '../../types';
+
+const { id } = Astro.params;
+
+let cat: Cat | null = null;
+let error: string | null = null;
+
+try {
+  const catApiUrl = new URL(`/api/cats/${id}`, Astro.url).toString();
+  const response = await fetch(catApiUrl);
+  if (response.ok) {
+    cat = await response.json();
+  } else {
+    error = 'Gato no encontrado';
+  }
+} catch (e) {
+  error = 'Error al cargar el gato';
+}
+---
+
+<Layout title={cat ? cat.name : 'Gato'}>
+  <div class="container">
+    {error ? (
+      <div class="error">{error}</div>
+    ) : cat ? (
+      <div class="dog-detail">
+        <div class="dog-detail-header">
+          <div class="dog-detail-images">
+            {cat.images.length > 0 ? (
+              cat.images.map((image: string) => (
+                <img src={image} alt={cat.name} class="dog-detail-image" />
+              ))
+            ) : (
+              <img src="/images/default-dog.svg" alt={cat.name} class="dog-detail-image" />
+            )}
+          </div>
+          
+          <div class="dog-detail-info">
+            <h1>{cat.name}</h1>
+            <p>
+              <span class={`dog-status status-${cat.status}`}>
+                {cat.status === 'available' && 'Disponible'}
+                {cat.status === 'adopted' && 'Adoptado'}
+                {cat.status === 'in_treatment' && 'En Tratamiento'}
+                {cat.status === 'reserved' && 'Reservado'}
+              </span>
+            </p>
+            
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>🐈 Raza</strong>
+                {cat.breed}
+              </div>
+              <div class="info-item">
+                <strong>🎂 Edad</strong>
+                {cat.age} {cat.age === 1 ? 'año' : 'años'}
+              </div>
+              <div class="info-item">
+                <strong>⚥ Género</strong>
+                {cat.gender === 'male' ? 'Macho' : 'Hembra'}
+              </div>
+              <div class="info-item">
+                <strong>📏 Tamaño</strong>
+                {cat.size === 'small' && 'Pequeño'}
+                {cat.size === 'medium' && 'Mediano'}
+                {cat.size === 'large' && 'Grande'}
+              </div>
+              <div class="info-item">
+                <strong>💉 Vacunado</strong>
+                {cat.vaccinated ? '✅ Sí' : '❌ No'}
+              </div>
+              <div class="info-item">
+                <strong>✂️ Esterilizado</strong>
+                {cat.sterilized ? '✅ Sí' : '❌ No'}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h2>📖 Sobre {cat.name}</h2>
+          <p>{cat.description}</p>
+
+          {cat.personality && (
+            <div>
+              <h3>✨ Personalidad</h3>
+              <p>{cat.personality}</p>
+            </div>
+          )}
+
+          {cat.healthConditions.length > 0 && (
+            <div>
+              <h3>🏥 Condiciones de Salud</h3>
+              <ul>
+                {cat.healthConditions.map((condition: string) => (
+                  <li>{condition}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {cat.specialCare && (
+            <div>
+              <h3>💊 Cuidados Especiales</h3>
+              <p>{cat.specialCare}</p>
+            </div>
+          )}
+        </div>
+
+        {cat.status === 'available' && (
+          <div class="contact-section">
+            <h2>💌 ¿Interesado en adoptar a {cat.name}?</h2>
+            <p>Contáctanos por WhatsApp para más información sobre la adopción.</p>
+            <a
+              href={`https://wa.me/+523313296314?text=Hola, me gustaría obtener más información sobre la adopción de ${cat.name}.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn whatsapp-btn"
+            >
+              💬 Enviar por WhatsApp
+            </a>
+          </div>
+        )}
+      </div>
+    ) : null}
+    
+    <div style="margin-top: 2rem;">
+      <a href="/cats" class="btn btn-secondary">← Volver a la lista</a>
+    </div>
+  </div>
+</Layout>
