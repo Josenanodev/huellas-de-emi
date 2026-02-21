@@ -2,10 +2,16 @@
 import Layout from "../layouts/Layout.astro";
 import type { Dog } from "../types";
 
-const apiUrl = import.meta.env.DEV ? "http://localhost:4321" : "";
-const response = await fetch(`${apiUrl}/api/dogs`);
-const data: unknown = await response.json();
-const dogs: Dog[] = Array.isArray(data) ? data : [];
+let dogs: Dog[] = [];
+
+try {
+  const dogsApiUrl = new URL("/api/dogs", Astro.url).toString();
+  const response = await fetch(dogsApiUrl);
+  const data: unknown = await response.json();
+  dogs = Array.isArray(data) ? data : [];
+} catch (error) {
+  console.error("Failed to load dogs on homepage:", error);
+}
 ---
 
 <Layout title="Inicio">
