@@ -130,6 +130,12 @@ import Layout from "../layouts/Layout.astro";
                 style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;"
               >
               </div>
+              <small
+                id="delete-images-legend"
+                style="display: none; margin-top: 0.5rem; color: var(--primary-dark);"
+              >
+                Guarde los cambios para eliminar imagenes
+              </small>
             </div>
 
             <div class="form-group">
@@ -191,8 +197,150 @@ import Layout from "../layouts/Layout.astro";
   const imagePreview = document.getElementById("image-preview");
   const existingImagesSection = document.getElementById("existing-images-section");
   const existingImagesContainer = document.getElementById("existing-images");
+  const deleteImagesLegend = document.getElementById("delete-images-legend");
   
   let currentDogImages: string[] = [];
+  let pendingImageDeletes = new Set<string>();
+
+  function getAuthHeaders(withJson = false): Record<string, string> {
+    return {
+      ...(withJson ? { "Content-Type": "application/json" } : {}),
+      "X-Admin-Password": adminPassword,
+    };
+  }
+
+  function parseCommaSeparated(value: string): string[] {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item);
+  }
+
+  function resetDogForm() {
+    dogForm.reset();
+    dogIdInput.value = "";
+    currentDogImages = [];
+    pendingImageDeletes = new Set();
+    if (imagePreview) imagePreview.innerHTML = "";
+    if (existingImagesSection) existingImagesSection.style.display = "none";
+    if (existingImagesContainer) existingImagesContainer.innerHTML = "";
+    if (deleteImagesLegend) deleteImagesLegend.style.display = "none";
+    if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
+  }
+
+  function renderExistingImages() {
+    if (!existingImagesSection || !existingImagesContainer) return;
+
+    existingImagesContainer.innerHTML = "";
+
+    if (currentDogImages.length === 0) {
+      existingImagesSection.style.display = "none";
+      if (deleteImagesLegend) deleteImagesLegend.style.display = "none";
+      return;
+    }
+
+    existingImagesSection.style.display = "block";
+
+    currentDogImages.forEach((imageUrl: string) => {
+      const isPendingDelete = pendingImageDeletes.has(imageUrl);
+
+      const imageWrapper = document.createElement("div");
+      imageWrapper.style.position = "relative";
+      imageWrapper.style.border = "2px solid var(--border)";
+      imageWrapper.style.borderRadius = "4px";
+      imageWrapper.style.overflow = "hidden";
+
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.style.width = "100%";
+      img.style.height = "120px";
+      img.style.objectFit = "cover";
+      img.style.display = "block";
+      img.style.filter = isPendingDelete ? "grayscale(100%)" : "none";
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "×";
+      deleteBtn.type = "button";
+      deleteBtn.style.position = "absolute";
+      deleteBtn.style.top = "4px";
+      deleteBtn.style.right = "4px";
+      deleteBtn.style.background = "#c33";
+      deleteBtn.style.color = "white";
+      deleteBtn.style.border = "none";
+      deleteBtn.style.borderRadius = "50%";
+      deleteBtn.style.width = "24px";
+      deleteBtn.style.height = "24px";
+      deleteBtn.style.cursor = "pointer";
+      deleteBtn.style.fontSize = "18px";
+      deleteBtn.style.lineHeight = "1";
+      deleteBtn.style.display = "flex";
+      deleteBtn.style.alignItems = "center";
+      deleteBtn.style.justifyContent = "center";
+      deleteBtn.style.zIndex = "2";
+      deleteBtn.style.opacity = isPendingDelete ? "0" : "1";
+      deleteBtn.style.pointerEvents = isPendingDelete ? "none" : "auto";
+
+      deleteBtn.addEventListener("click", () => {
+        pendingImageDeletes.add(imageUrl);
+        renderExistingImages();
+      });
+
+      if (isPendingDelete) {
+        const overlay = document.createElement("div");
+        overlay.style.position = "absolute";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(40, 40, 40, 0.6)";
+        overlay.style.display = "flex";
+        overlay.style.flexDirection = "column";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.gap = "0.35rem";
+        overlay.style.zIndex = "1";
+
+        const pendingIcon = document.createElement("span");
+        pendingIcon.textContent = "×";
+        pendingIcon.style.fontSize = "1.35rem";
+        pendingIcon.style.fontWeight = "700";
+        pendingIcon.style.color = "#fff";
+        pendingIcon.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
+
+        const pendingText = document.createElement("small");
+        pendingText.textContent = "Pendiente de eliminar";
+        pendingText.style.fontWeight = "600";
+        pendingText.style.color = "#fff";
+        pendingText.style.background = "rgba(0, 0, 0, 0.35)";
+        pendingText.style.padding = "0.2rem 0.35rem";
+        pendingText.style.borderRadius = "4px";
+        pendingText.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
+
+        const undoBtn = document.createElement("button");
+        undoBtn.type = "button";
+        undoBtn.className = "btn btn-danger";
+        undoBtn.textContent = "Deshacer";
+        undoBtn.style.padding = "0.25rem 0.5rem";
+        undoBtn.style.fontSize = "0.8rem";
+        undoBtn.style.minWidth = "auto";
+
+        undoBtn.addEventListener("click", () => {
+          pendingImageDeletes.delete(imageUrl);
+          renderExistingImages();
+        });
+
+        overlay.appendChild(pendingIcon);
+        overlay.appendChild(pendingText);
+        overlay.appendChild(undoBtn);
+        imageWrapper.appendChild(overlay);
+      }
+
+      imageWrapper.appendChild(img);
+      imageWrapper.appendChild(deleteBtn);
+      existingImagesContainer.appendChild(imageWrapper);
+    });
+
+    if (deleteImagesLegend) {
+      deleteImagesLegend.style.display = pendingImageDeletes.size > 0 ? "block" : "none";
+    }
+  }
 
   // Image preview functionality
   imageFilesInput?.addEventListener("change", () => {
@@ -279,6 +427,89 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
+  async function uploadSelectedImages() {
+    const imageFiles = imageFilesInput?.files;
+    if (!imageFiles || imageFiles.length === 0) return [];
+
+    const uploadFormData = new FormData();
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
+      if (file) uploadFormData.append("images", file);
+    }
+
+    const uploadResponse = await fetch("/api/upload", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: uploadFormData,
+    });
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json().catch(() => null);
+      throw new Error(error?.error || "Error al subir imágenes");
+    }
+
+    const result = await uploadResponse.json();
+    return result.urls || [];
+  }
+
+  function buildDogPayload(formData: FormData, uploadedUrls: string[]) {
+    const data: any = {};
+    const keptExistingImages = currentDogImages.filter(
+      (imageUrl) => !pendingImageDeletes.has(imageUrl),
+    );
+
+    formData.forEach((value, key) => {
+      if (key === "healthConditions" && value) {
+        data[key] = parseCommaSeparated(value as string);
+      } else if (key === "images" && value) {
+        const urlImages = parseCommaSeparated(value as string);
+        data[key] = [...keptExistingImages, ...urlImages, ...uploadedUrls];
+      } else if (key === "vaccinated" || key === "sterilized") {
+        data[key] = (document.getElementById(key) as HTMLInputElement).checked;
+      } else if (key === "age") {
+        data[key] = parseInt(value as string);
+      } else {
+        data[key] = value;
+      }
+    });
+
+    if (!data.images || data.images.length === 0) {
+      data.images = [...keptExistingImages, ...uploadedUrls];
+    }
+
+    return data;
+  }
+
+  function fillDogForm(dog: any) {
+    dogIdInput.value = dog._id;
+    (document.getElementById("name") as HTMLInputElement).value = dog.name;
+    (document.getElementById("breed") as HTMLInputElement).value = dog.breed;
+    (document.getElementById("age") as HTMLInputElement).value = dog.age;
+    (document.getElementById("gender") as HTMLSelectElement).value = dog.gender;
+    (document.getElementById("size") as HTMLSelectElement).value = dog.size;
+    (document.getElementById("status") as HTMLSelectElement).value = dog.status;
+    (document.getElementById("description") as HTMLTextAreaElement).value =
+      dog.description;
+    (document.getElementById("personality") as HTMLTextAreaElement).value =
+      dog.personality || "";
+    (document.getElementById("specialCare") as HTMLTextAreaElement).value =
+      dog.specialCare || "";
+    (document.getElementById("healthConditions") as HTMLInputElement).value =
+      dog.healthConditions.join(", ");
+    (document.getElementById("vaccinated") as HTMLInputElement).checked =
+      dog.vaccinated;
+    (document.getElementById("sterilized") as HTMLInputElement).checked =
+      dog.sterilized;
+
+    currentDogImages = [...dog.images];
+  pendingImageDeletes = new Set();
+    renderExistingImages();
+    (document.getElementById("images") as HTMLInputElement).value = "";
+
+    if (formTitle) formTitle.textContent = "Editar Perro";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function showAuthMessage(message: string, type: "success" | "error") {
     if (authMessage) {
       authMessage.className = type;
@@ -322,8 +553,8 @@ import Layout from "../layouts/Layout.astro";
               </span>
             </div>
             <div class="dog-actions">
-              <button class="btn" onclick="editDog('${dog._id}')">Editar</button>
-              <button class="btn btn-danger" onclick="deleteDog('${dog._id}')">Eliminar</button>
+              <button class="btn" data-action="edit" data-id="${dog._id}">Editar</button>
+              <button class="btn btn-danger" data-action="delete" data-id="${dog._id}">Eliminar</button>
             </div>
           </li>
         `,
@@ -340,68 +571,17 @@ import Layout from "../layouts/Layout.astro";
     e.preventDefault();
 
     const formData = new FormData(dogForm);
-    const data: any = {};
-
-    // First, handle file uploads if any
     let uploadedUrls: string[] = [];
-    const imageFiles = imageFilesInput?.files;
 
-    if (imageFiles && imageFiles.length > 0) {
-      const uploadFormData = new FormData();
-      for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i];
-        if (file) uploadFormData.append("images", file);
-      }
-
-      try {
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          headers: {
-            "X-Admin-Password": adminPassword,
-          },
-          body: uploadFormData,
-        });
-
-        if (uploadResponse.ok) {
-          const result = await uploadResponse.json();
-          uploadedUrls = result.urls || [];
-        } else {
-          const error = await uploadResponse.json();
-          showAdminMessage(error.error || "Error al subir imágenes", "error");
-          return;
-        }
-      } catch (error) {
-        showAdminMessage("Error al subir imágenes", "error");
-        return;
-      }
+    try {
+      uploadedUrls = await uploadSelectedImages();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error al subir imágenes";
+      showAdminMessage(message, "error");
+      return;
     }
 
-    formData.forEach((value, key) => {
-      if (key === "healthConditions" && value) {
-        data[key] = (value as string)
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s);
-      } else if (key === "images" && value) {
-        const urlImages = (value as string)
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s);
-        // Combine existing images (not deleted), URL images, and uploaded images
-        data[key] = [...currentDogImages, ...urlImages, ...uploadedUrls];
-      } else if (key === "vaccinated" || key === "sterilized") {
-        data[key] = (document.getElementById(key) as HTMLInputElement).checked;
-      } else if (key === "age") {
-        data[key] = parseInt(value as string);
-      } else {
-        data[key] = value;
-      }
-    });
-
-    // If no URL images but have existing or uploaded images, set them
-    if (!data.images || data.images.length === 0) {
-      data.images = [...currentDogImages, ...uploadedUrls];
-    }
+    const data = buildDogPayload(formData, uploadedUrls);
 
     const dogId = dogIdInput.value;
     const url = dogId ? `/api/dogs/${dogId}` : "/api/dogs";
@@ -410,10 +590,7 @@ import Layout from "../layouts/Layout.astro";
     try {
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Password": adminPassword,
-        },
+        headers: getAuthHeaders(true),
         body: JSON.stringify(data),
       });
 
@@ -422,13 +599,7 @@ import Layout from "../layouts/Layout.astro";
           dogId ? "Perro actualizado correctamente" : "Perro agregado correctamente",
           "success",
         );
-        dogForm.reset();
-        currentDogImages = [];
-        if (imagePreview) imagePreview.innerHTML = "";
-        if (existingImagesSection) existingImagesSection.style.display = "none";
-        if (existingImagesContainer) existingImagesContainer
-        if (imagePreview) imagePreview.innerHTML = "";
-        if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
+        resetDogForm();
         loadDogs();
       } else {
         const error = await response.json();
@@ -440,106 +611,21 @@ import Layout from "../layouts/Layout.astro";
   });
 
   cancelBtn?.addEventListener("click", () => {
-    dogForm.reset();
-    dogIdInput.value = "";
-    if (imagePreview) imagePreview.innerHTML = "";
-    if (existingImagesSection) existingImagesSection.style.display = "none";
-    if (existingImagesContainer) existingImagesContainer.innerHTML = "";
-    currentDogImages = [];
-    if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
+    resetDogForm();
   });
 
-  (window as any).editDog = async (id: string) => {
+  async function editDog(id: string) {
     try {
       const response = await fetch(`/api/dogs/${id}`);
       const dog = await response.json();
 
-      dogIdInput.value = dog._id;
-      (document.getElementById("name") as HTMLInputElement).value = dog.name;
-      (document.getElementById("breed") as HTMLInputElement).value = dog.breed;
-      (document.getElementById("age") as HTMLInputElement).value = dog.age;
-      (document.getElementById("gender") as HTMLSelectElement).value = dog.gender;
-      (document.getElementById("size") as HTMLSelectElement).value = dog.size;
-      (document.getElementById("status") as HTMLSelectElement).value = dog.status;
-      (document.getElementById("description") as HTMLTextAreaElement).value =
-        dog.description;
-      (document.getElementById("personality") as HTMLTextAreaElement).value =
-        dog.personality || "";
-      (document.getElementById("specialCare") as HTMLTextAreaElement).value =
-        dog.specialCare || "";
-      (document.getElementById("healthConditions") as HTMLInputElement).value =
-        dog.healthConditions.join(", ");
-      (document.getElementById("vaccinated") as HTMLInputElement).checked =
-        dog.vaccinated;
-      (document.getElementById("sterilized") as HTMLInputElement).checked =
-        dog.sterilized;
-      // Display existing images with delete buttons
-      currentDogImages = [...dog.images];
-      if (existingImagesSection && existingImagesContainer) {
-        existingImagesContainer.innerHTML = "";
-        if (currentDogImages.length > 0) {
-          existingImagesSection.style.display = "block";
-          currentDogImages.forEach((imageUrl: string, index: number) => {
-            const imageWrapper = document.createElement("div");
-            imageWrapper.style.position = "relative";
-            imageWrapper.style.border = "2px solid var(--border)";
-            imageWrapper.style.borderRadius = "4px";
-            imageWrapper.style.overflow = "hidden";
-
-            const img = document.createElement("img");
-            img.src = imageUrl;
-            img.style.width = "100%";
-            img.style.height = "120px";
-            img.style.objectFit = "cover";
-            img.style.display = "block";
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "×";
-            deleteBtn.type = "button";
-            deleteBtn.style.position = "absolute";
-            deleteBtn.style.top = "4px";
-            deleteBtn.style.right = "4px";
-            deleteBtn.style.background = "#c33";
-            deleteBtn.style.color = "white";
-            deleteBtn.style.border = "none";
-            deleteBtn.style.borderRadius = "50%";
-            deleteBtn.style.width = "24px";
-            deleteBtn.style.height = "24px";
-            deleteBtn.style.cursor = "pointer";
-            deleteBtn.style.fontSize = "18px";
-            deleteBtn.style.lineHeight = "1";
-            deleteBtn.style.display = "flex";
-            deleteBtn.style.alignItems = "center";
-            deleteBtn.style.justifyContent = "center";
-
-            deleteBtn.addEventListener("click", function() {
-              currentDogImages.splice(index, 1);
-              imageWrapper.remove();
-              if (currentDogImages.length === 0 && existingImagesSection) {
-                existingImagesSection.style.display = "none";
-              }
-            });
-
-            imageWrapper.appendChild(img);
-            imageWrapper.appendChild(deleteBtn);
-            existingImagesContainer.appendChild(imageWrapper);
-          });
-        } else {
-          existingImagesSection.style.display = "none";
-        }
-      }
-
-      (document.getElementById("images") as HTMLInputElement).value =
-        dog.images.join(", ");
-
-      if (formTitle) formTitle.textContent = "Editar Perro";
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      fillDogForm(dog);
     } catch (error) {
       showAdminMessage("Error al cargar el perro", "error");
     }
-  };
+  }
 
-  (window as any).deleteDog = async (id: string) => {
+  async function deleteDog(id: string) {
     if (!confirm("¿Estás seguro de que quieres eliminar este perro?")) {
       return;
     }
@@ -547,9 +633,7 @@ import Layout from "../layouts/Layout.astro";
     try {
       const response = await fetch(`/api/dogs/${id}`, {
         method: "DELETE",
-        headers: {
-          "X-Admin-Password": adminPassword,
-        },
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -562,5 +646,21 @@ import Layout from "../layouts/Layout.astro";
     } catch (error) {
       showAdminMessage("Error al eliminar el perro", "error");
     }
-  };
+  }
+
+  dogsList?.addEventListener("click", async (event) => {
+    const target = event.target as HTMLElement;
+    const button = target.closest("button[data-action][data-id]") as HTMLButtonElement;
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const id = button.dataset.id;
+    if (!id) return;
+
+    if (action === "edit") {
+      await editDog(id);
+    } else if (action === "delete") {
+      await deleteDog(id);
+    }
+  });
 </script>
