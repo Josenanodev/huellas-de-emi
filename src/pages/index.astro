@@ -3,14 +3,21 @@ import Layout from "../layouts/Layout.astro";
 import type { Dog } from "../types";
 
 let dogs: Dog[] = [];
+let errorMessage = '';
 
 try {
   const dogsApiUrl = new URL("/api/dogs", Astro.url).toString();
-  const response = await fetch(dogsApiUrl);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  
+  const response = await fetch(dogsApiUrl, { signal: controller.signal });
+  clearTimeout(timeoutId);
+  
   const data: unknown = await response.json();
   dogs = Array.isArray(data) ? data : [];
 } catch (error) {
   console.error("Failed to load dogs on homepage:", error);
+  errorMessage = 'No se pudieron cargar los perros en este momento. Por favor, intenta más tarde.';
 }
 ---
 
@@ -19,8 +26,14 @@ try {
     <h1>🐾 Perros en Adopción</h1>
     <p>Conoce a nuestros adorables perros que están buscando un hogar lleno de amor.</p>
 
+    {errorMessage && (
+      <div style="padding: 1rem; background: #fee; border: 1px solid #c33; border-radius: 4px; margin: 1rem 0;">
+        <p style="margin: 0; color: #c33;">{errorMessage}</p>
+      </div>
+    )}
+
     {
-      dogs.length === 0 ? (
+      dogs.length === 0 && !errorMessage ? (
         <p>No hay perros disponibles en este momento.</p>
       ) : (
         <div class="dogs-grid">

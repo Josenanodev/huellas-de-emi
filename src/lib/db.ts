@@ -20,7 +20,11 @@ export async function connectDB() {
       );
     }
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    });
     isConnected = true;
     console.log('Connected to MongoDB successfully');
   } catch (error) {

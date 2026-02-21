@@ -1,36 +1,16 @@
 // Runtime environment loader for production
-// In Amplify, env vars written to .env during build need to be explicitly loaded
+// In Amplify, env vars are written to .env during preBuild and read at build time
+// This file is a placeholder - env vars are available via import.meta.env
 
 let envLoaded = false;
 
 export function loadEnv() {
-  if (envLoaded || typeof process === 'undefined') return;
+  if (envLoaded) return;
   
-  try {
-    // Try to read .env file in production if it exists
-    if (import.meta.env.PROD && typeof require !== 'undefined') {
-      const fs = require('fs');
-      const path = require('path');
-      const envPath = path.join(process.cwd(), '.env');
-      
-      if (fs.existsSync(envPath)) {
-        const envContent = fs.readFileSync(envPath, 'utf-8');
-        envContent.split('\n').forEach((line: string) => {
-          const [key, ...valueParts] = line.split('=');
-          if (key && valueParts.length > 0) {
-            const value = valueParts.join('=').trim();
-            if (!process.env[key]) {
-              process.env[key] = value;
-            }
-          }
-        });
-      }
-    }
-    envLoaded = true;
-  } catch (error) {
-    console.error('Failed to load runtime env:', error);
-  }
+  // Env vars are already available via import.meta.env at build time
+  // No runtime loading needed since .env is processed during build
+  envLoaded = true;
 }
 
-// Auto-load on import
+// Auto-load on import (no-op in current implementation)
 loadEnv();
