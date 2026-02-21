@@ -6,12 +6,16 @@ export const GET: APIRoute = async () => {
     timestamp: new Date().toISOString(),
     env: {
       hasMongoUri:
-        !!(process.env.SECRET_MONGODB_URI?.trim() ||
+        !!(import.meta.env.SECRET_MONGODB_URI?.trim() ||
+        process.env.SECRET_MONGODB_URI?.trim() ||
         process.env.MONGODB_URI?.trim()),
       hasAdminPassword:
-        !!(process.env.SECRET_ADMIN_PASSWORD?.trim() ||
+        !!(import.meta.env.SECRET_ADMIN_PASSWORD?.trim() ||
+        process.env.SECRET_ADMIN_PASSWORD?.trim() ||
         process.env.ADMIN_PASSWORD?.trim()),
-      nodeEnv: process.env.NODE_ENV || 'unknown',
+      nodeEnv: process.env.NODE_ENV || import.meta.env.MODE || 'unknown',
+      mode: import.meta.env.MODE,
+      ssr: import.meta.env.SSR,
     },
   };
 

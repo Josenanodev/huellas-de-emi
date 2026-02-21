@@ -9,9 +9,9 @@ export async function connectDB() {
 
   try {
     const uri =
+      import.meta.env.SECRET_MONGODB_URI?.trim() ||
       process.env.SECRET_MONGODB_URI?.trim() ||
-      process.env.MONGODB_URI?.trim() ||
-      import.meta.env.SECRET_MONGODB_URI?.trim();
+      process.env.MONGODB_URI?.trim();
 
     if (!uri) {
       throw new Error(
