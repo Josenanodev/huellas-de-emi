@@ -6,14 +6,25 @@ import Layout from "../layouts/Layout.astro";
   <div class="container page-stack">
     <div class="admin-container">
       <div id="login-section">
-        <p class="section-kicker">Huellas de Emi</p>
-        <h1>Panel de Administración</h1>
-        <div class="form-group">
-          <label for="admin-password">Contraseña de Administrador</label>
-          <input type="password" id="admin-password" placeholder="Ingrese contraseña" />
+        <div class="login-card">
+          <img src="/images/heart-paw.svg" alt="" class="login-mark" aria-hidden="true" />
+          <p class="section-kicker">Huellas de Emi</p>
+          <h1>Panel de Administración</h1>
+          <p class="login-copy">Entra para agregar mascotas, actualizar historias y mantener el catálogo bonito.</p>
+
+          <div class="form-group">
+            <label for="admin-password">Contraseña de administrador</label>
+            <input
+              type="password"
+              id="admin-password"
+              placeholder="Escribe la contraseña"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button id="login-btn" class="btn login-btn">Iniciar sesión</button>
+          <div id="auth-message"></div>
         </div>
-        <button id="login-btn" class="btn">Iniciar Sesión</button>
-        <div id="auth-message"></div>
       </div>
 
       <div id="admin-panel" style="display: none;">

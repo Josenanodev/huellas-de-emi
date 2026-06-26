@@ -848,6 +848,73 @@ p {
   box-shadow: var(--shadow);
 }
 
+#login-section {
+  display: grid;
+  min-height: min(620px, calc(100vh - 240px));
+  place-items: center;
+  padding: 1.5rem 0;
+}
+
+.login-card {
+  position: relative;
+  width: min(100%, 440px);
+  overflow: hidden;
+  padding: 2rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(252, 235, 240, 0.72), rgba(255, 255, 255, 0.86) 42%),
+    #fff;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.login-card::after {
+  content: "";
+  position: absolute;
+  right: -44px;
+  bottom: -42px;
+  width: 150px;
+  height: 150px;
+  background: url("/images/paw.svg") center / contain no-repeat;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.login-mark {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 1rem;
+  padding: 0.45rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.login-card h1 {
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.8rem, 4vw, 2.45rem);
+}
+
+.login-copy {
+  max-width: 34ch;
+  color: var(--text-muted);
+}
+
+.login-card .form-group {
+  margin-top: 1.35rem;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+#auth-message:not(:empty) {
+  margin-top: 1rem;
+}
+
 .admin-header {
   display: flex;
   align-items: start;
