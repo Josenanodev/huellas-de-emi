@@ -17,6 +17,8 @@ try {
 
 const availablePets = pets.filter((pet) => pet.status === "available").length;
 const adoptedPets = pets.filter((pet) => pet.status === "adopted").length;
+const pageDescription =
+  "Conoce perritos y gatitos en adopción de Huellas de Emi. Cada mascota tiene una historia y está buscando un hogar lleno de amor.";
 
 function getSpeciesLabel(species: Pet["species"]) {
   return species === "cat" ? "Gatito" : "Perrito";
@@ -44,7 +46,7 @@ function getSizeLabel(size: Pet["size"]) {
 }
 ---
 
-<Layout title="Inicio">
+<Layout title="Mascotas en adopción" description={pageDescription}>
   <div class="container page-stack">
     <header class="catalog-hero">
       <div class="hero-copy">

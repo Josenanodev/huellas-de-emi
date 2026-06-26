@@ -25,9 +25,18 @@ const whatsappMessage = pet
   : "";
 
 const speciesLabel = pet?.species === "cat" ? "Gatito" : "Perrito";
+const pageDescription = pet
+  ? `${pet.name} es ${speciesLabel.toLowerCase()} en adopción. ${pet.description.slice(0, 135)}${pet.description.length > 135 ? "..." : ""}`
+  : "Conoce esta mascota en adopción de Huellas de Emi.";
+const petImage = pet?.images.find((image) => image.startsWith("http") || image.startsWith("/"));
+const socialImage = petImage || "/images/og-cover.png";
 ---
 
-<Layout title={pet ? pet.name : "Mascota"}>
+<Layout
+  title={pet ? `${pet.name} en adopción` : "Mascota"}
+  description={pageDescription}
+  image={socialImage}
+>
   <div class="container page-stack">
     {error ? (
       <div class="error" role="alert">{error}</div>
