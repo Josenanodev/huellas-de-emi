@@ -1,10 +1,12 @@
 import mongoose, { Schema } from 'mongoose';
-import type { Document } from 'mongoose';
+import type { Document, Model } from 'mongoose';
 
-export interface ICat extends Document {
+export interface IPet extends Document {
+  species: 'dog' | 'cat';
   name: string;
   breed: string;
-  age: number;
+  age?: number;
+  approximateBirthDate?: Date;
   gender: 'male' | 'female';
   size: 'small' | 'medium' | 'large';
   status: 'available' | 'adopted' | 'in_treatment' | 'reserved';
@@ -20,8 +22,14 @@ export interface ICat extends Document {
   updatedAt: Date;
 }
 
-const catSchema = new Schema<ICat>(
+const petSchema = new Schema<IPet>(
   {
+    species: {
+      type: String,
+      enum: ['dog', 'cat'],
+      default: 'dog',
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -32,7 +40,11 @@ const catSchema = new Schema<ICat>(
     },
     age: {
       type: Number,
-      required: true,
+      required: false,
+    },
+    approximateBirthDate: {
+      type: Date,
+      required: false,
     },
     gender: {
       type: String,
@@ -83,10 +95,13 @@ const catSchema = new Schema<ICat>(
     },
   },
   {
+    collection: 'dogs',
     timestamps: true,
-  }
+  },
 );
 
-const Cat = mongoose.model<ICat>('Cat', catSchema);
+const Pet =
+  (mongoose.models.Pet as Model<IPet> | undefined) ||
+  mongoose.model<IPet>('Pet', petSchema);
 
-export default Cat;
+export default Pet;

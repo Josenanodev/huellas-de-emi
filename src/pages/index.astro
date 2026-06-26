@@ -1,69 +1,220 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import type { Dog } from "../types";
+import { listPets } from "../lib/pets";
+import { formatPetAge } from "../utils/petAge";
+import type { Pet } from "../types";
 
-let dogs: Dog[] = [];
-let errorMessage = '';
+let pets: Pet[] = [];
+let errorMessage = "";
 
 try {
-  const dogsApiUrl = new URL("/api/dogs", Astro.url).toString();
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
-  
-  const response = await fetch(dogsApiUrl, { signal: controller.signal });
-  clearTimeout(timeoutId);
-  
-  const data: unknown = await response.json();
-  dogs = Array.isArray(data) ? data : [];
+  pets = await listPets();
 } catch (error) {
-  console.error("Failed to load dogs on homepage:", error);
-  errorMessage = 'No se pudieron cargar los perros en este momento. Por favor, intenta más tarde.';
+  console.error("Failed to load pets on homepage:", error);
+  errorMessage =
+    "No se pudieron cargar las mascotas en este momento. Por favor, intenta más tarde.";
+}
+
+const availablePets = pets.filter((pet) => pet.status === "available").length;
+const adoptedPets = pets.filter((pet) => pet.status === "adopted").length;
+
+function getSpeciesLabel(species: Pet["species"]) {
+  return species === "cat" ? "Gatito" : "Perrito";
+}
+
+function getStatusLabel(status: Pet["status"]) {
+  const labels = {
+    available: "Disponible",
+    adopted: "Adoptado",
+    in_treatment: "En tratamiento",
+    reserved: "Reservado",
+  };
+
+  return labels[status];
+}
+
+function getSizeLabel(size: Pet["size"]) {
+  const labels = {
+    small: "Pequeño",
+    medium: "Mediano",
+    large: "Grande",
+  };
+
+  return labels[size];
 }
 ---
 
 <Layout title="Inicio">
-  <div class="container">
-    <h1>🐾 Perros en Adopción</h1>
-    <p>Conoce a nuestros adorables perros que están buscando un hogar lleno de amor.</p>
+  <div class="container page-stack">
+    <header class="catalog-hero">
+      <div class="hero-copy">
+        <p class="section-kicker">Huellas de Emi</p>
+        <h1>Mascotas en adopción</h1>
+        <p class="hero-text">
+          Pequeñas historias esperando casa, cariño y una familia que las quiera bonito.
+        </p>
+      </div>
+
+      <div class="catalog-summary" aria-label="Resumen del catálogo">
+        <div class="stat-pill">
+          <span>{pets.length}</span>
+          <small>mascotas</small>
+        </div>
+        <div class="stat-pill">
+          <span>{availablePets}</span>
+          <small>disponibles</small>
+        </div>
+        <div class="stat-pill">
+          <span>{adoptedPets}</span>
+          <small>adoptadas</small>
+        </div>
+      </div>
+    </header>
+
+    <section class="catalog-tools" aria-label="Filtros del catálogo">
+      <div class="search-field">
+        <label for="pet-search">Buscar</label>
+        <input id="pet-search" type="search" placeholder="Nombre o raza" />
+      </div>
+
+      <div class="filter-group" aria-label="Especie">
+        <button type="button" class="filter-chip active" data-filter="species" data-value="all">Todos</button>
+        <button type="button" class="filter-chip" data-filter="species" data-value="dog">Perritos</button>
+        <button type="button" class="filter-chip" data-filter="species" data-value="cat">Gatitos</button>
+      </div>
+
+      <div class="filter-group" aria-label="Estado">
+        <button type="button" class="filter-chip active" data-filter="status" data-value="all">Todo estado</button>
+        <button type="button" class="filter-chip" data-filter="status" data-value="available">Disponibles</button>
+        <button type="button" class="filter-chip" data-filter="status" data-value="reserved">Reservados</button>
+        <button type="button" class="filter-chip" data-filter="status" data-value="in_treatment">Tratamiento</button>
+        <button type="button" class="filter-chip" data-filter="status" data-value="adopted">Adoptados</button>
+      </div>
+    </section>
 
     {errorMessage && (
-      <div style="padding: 1rem; background: #fee; border: 1px solid #c33; border-radius: 4px; margin: 1rem 0;">
-        <p style="margin: 0; color: #c33;">{errorMessage}</p>
+      <div class="error" role="alert">
+        <p>{errorMessage}</p>
       </div>
     )}
 
     {
-      dogs.length === 0 && !errorMessage ? (
-        <p>No hay perros disponibles en este momento.</p>
+      pets.length === 0 && !errorMessage ? (
+        <section class="empty-state">
+          <img src="/images/heart-paw.svg" alt="" aria-hidden="true" />
+          <p>No hay mascotas disponibles en este momento.</p>
+        </section>
       ) : (
-        <div class="dogs-grid">
-          {dogs.map((dog) => (
-            <div class="dog-card">
-              <img
-                src={dog.images[0] || "/images/default-dog.svg"}
-                alt={dog.name}
-                class="dog-image"
-              />
-              <div class="dog-info">
-                <h2 class="dog-name">{dog.name}</h2>
-                <p class="dog-breed">{dog.breed}</p>
-                <p>
-                  <span class={`dog-status status-${dog.status}`}>
-                    {dog.status === "available" && "Disponible"}
-                    {dog.status === "adopted" && "Adoptado"}
-                    {dog.status === "in_treatment" && "En Tratamiento"}
-                    {dog.status === "reserved" && "Reservado"}
-                  </span>
-                </p>
-                <p>{dog.description.substring(0, 100)}...</p>
-                <a href={`/dog/${dog._id}`} class="btn">
-                  Ver más
+        <>
+          <section class="dogs-grid" aria-label="Lista de mascotas en adopción">
+            {pets.map((pet) => (
+              <article
+                class={`dog-card species-${pet.species}`}
+                data-pet-card
+                data-species={pet.species}
+                data-status={pet.status}
+                data-size={pet.size}
+                data-search={`${pet.name} ${pet.breed}`.toLowerCase()}
+              >
+                <a href={`/pet/${pet._id}`} class="dog-image-link" aria-label={`Ver detalles de ${pet.name}`}>
+                  <img
+                    src={pet.images[0] || "/images/default-dog.svg"}
+                    alt={pet.name}
+                    class="dog-image"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </a>
-              </div>
-            </div>
-          ))}
-        </div>
+
+                <div class="dog-info">
+                  <div class="card-heading">
+                    <div>
+                      <p class="species-label">{getSpeciesLabel(pet.species)}</p>
+                      <h2 class="dog-name">{pet.name}</h2>
+                      <p class="dog-breed">{pet.breed}</p>
+                    </div>
+                    <span class={`dog-status status-${pet.status}`}>
+                      {getStatusLabel(pet.status)}
+                    </span>
+                  </div>
+
+                  <p class="dog-description">
+                    {pet.description.length > 118 ? `${pet.description.slice(0, 118)}...` : pet.description}
+                  </p>
+
+                  <div class="card-meta" aria-label="Datos rápidos">
+                    <span class="meta-age">{formatPetAge(pet)}</span>
+                    <span class="meta-size">{getSizeLabel(pet.size)}</span>
+                  </div>
+
+                  <a href={`/pet/${pet._id}`} class="btn btn-soft">
+                    Ver historia
+                  </a>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section class="empty-state filtered-empty" hidden>
+            <img src="/images/heart-paw.svg" alt="" aria-hidden="true" />
+            <p>No hay mascotas que coincidan con esos filtros.</p>
+          </section>
+        </>
       )
     }
   </div>
 </Layout>
+
+<script>
+  const filterState = {
+    species: "all",
+    status: "all",
+    search: "",
+  };
+
+  const petCards = Array.from(document.querySelectorAll<HTMLElement>("[data-pet-card]"));
+  const searchInput = document.getElementById("pet-search") as HTMLInputElement | null;
+  const filteredEmpty = document.querySelector<HTMLElement>(".filtered-empty");
+
+  function applyFilters() {
+    let visibleCount = 0;
+
+    petCards.forEach((card) => {
+      const matchesSpecies =
+        filterState.species === "all" || card.dataset.species === filterState.species;
+      const matchesStatus =
+        filterState.status === "all" || card.dataset.status === filterState.status;
+      const matchesSearch =
+        !filterState.search || card.dataset.search?.includes(filterState.search);
+      const isVisible = matchesSpecies && matchesStatus && matchesSearch;
+
+      card.hidden = !isVisible;
+      if (isVisible) visibleCount += 1;
+    });
+
+    if (filteredEmpty) {
+      filteredEmpty.hidden = visibleCount > 0;
+    }
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.filter as "species" | "status";
+      const value = button.dataset.value || "all";
+      filterState[filter] = value;
+
+      document
+        .querySelectorAll<HTMLButtonElement>(`[data-filter="${filter}"]`)
+        .forEach((filterButton) => {
+          filterButton.classList.toggle("active", filterButton === button);
+        });
+
+      applyFilters();
+    });
+  });
+
+  searchInput?.addEventListener("input", () => {
+    filterState.search = searchInput.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>

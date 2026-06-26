@@ -3,9 +3,10 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Admin">
-  <div class="container">
+  <div class="container page-stack">
     <div class="admin-container">
       <div id="login-section">
+        <p class="section-kicker">Huellas de Emi</p>
         <h1>Panel de Administración</h1>
         <div class="form-group">
           <label for="admin-password">Contraseña de Administrador</label>
@@ -17,23 +18,36 @@ import Layout from "../layouts/Layout.astro";
 
       <div id="admin-panel" style="display: none;">
         <div class="admin-header">
-          <h1>Panel de Administración</h1>
+          <div>
+            <p class="section-kicker">Catálogo</p>
+            <h1>Gestionar mascotas</h1>
+          </div>
           <button id="logout-btn" class="btn btn-secondary">Cerrar Sesión</button>
         </div>
 
         <div id="admin-message"></div>
 
-        <div class="admin-tabs">
-          <button class="admin-tab active" data-tab="dogs">🐕 Perros</button>
-          <button class="admin-tab" data-tab="cats">🐈 Gatos</button>
+        <div class="admin-menu" role="tablist" aria-label="Acciones de administración">
+          <button type="button" class="admin-menu-btn active" id="manage-dogs-tab">
+            Gestionar existentes
+          </button>
+          <button type="button" class="admin-menu-btn" id="add-dog-tab">
+            Agregar mascota
+          </button>
         </div>
 
-        <!-- Dogs section -->
-        <div id="dogs-section">
-        <div id="dog-form-section">
-          <h2 id="form-title">Agregar Nuevo Perro</h2>
+        <div id="dog-form-section" style="display: none;">
+          <h2 id="form-title">Agregar nueva mascota</h2>
           <form id="dog-form">
             <input type="hidden" id="dog-id" />
+
+            <div class="form-group">
+              <label for="species">Especie *</label>
+              <select id="species" name="species" required>
+                <option value="dog">Perrito</option>
+                <option value="cat">Gatito</option>
+              </select>
+            </div>
 
             <div class="form-group">
               <label for="name">Nombre *</label>
@@ -46,8 +60,8 @@ import Layout from "../layouts/Layout.astro";
             </div>
 
             <div class="form-group">
-              <label for="age">Edad (años) *</label>
-              <input type="number" id="age" name="age" min="0" required />
+              <label for="approximateBirthDate">Fecha aproximada de nacimiento *</label>
+              <input type="date" id="approximateBirthDate" name="approximateBirthDate" required />
             </div>
 
             <div class="form-group">
@@ -174,168 +188,27 @@ import Layout from "../layouts/Layout.astro";
           </form>
         </div>
 
-        <div style="margin-top: 3rem;">
-          <h2>Lista de Perros</h2>
+        <div class="admin-list-section" id="admin-list-section">
+          <h2>Mascotas registradas</h2>
+          <div class="admin-list-tools" aria-label="Filtros de mascotas">
+            <input type="search" id="admin-search" placeholder="Buscar por nombre o raza" />
+            <select id="admin-species-filter">
+              <option value="all">Todas las especies</option>
+              <option value="dog">Perritos</option>
+              <option value="cat">Gatitos</option>
+            </select>
+            <select id="admin-status-filter">
+              <option value="all">Todos los estados</option>
+              <option value="available">Disponibles</option>
+              <option value="reserved">Reservados</option>
+              <option value="in_treatment">En tratamiento</option>
+              <option value="adopted">Adoptados</option>
+            </select>
+          </div>
           <ul class="dogs-list" id="dogs-list">
-            <!-- Dogs will be loaded here -->
+            <!-- Pets will be loaded here -->
           </ul>
         </div>
-        </div><!-- end dogs-section -->
-
-        <!-- Cats section -->
-        <div id="cats-section" style="display: none;">
-        <div id="cat-form-section">
-          <h2 id="cat-form-title">Agregar Nuevo Gato</h2>
-          <form id="cat-form">
-            <input type="hidden" id="cat-id" />
-
-            <div class="form-group">
-              <label for="cat-name">Nombre *</label>
-              <input type="text" id="cat-name" name="name" required />
-            </div>
-
-            <div class="form-group">
-              <label for="cat-breed">Raza *</label>
-              <input type="text" id="cat-breed" name="breed" required />
-            </div>
-
-            <div class="form-group">
-              <label for="cat-age">Edad (años) *</label>
-              <input type="number" id="cat-age" name="age" min="0" required />
-            </div>
-
-            <div class="form-group">
-              <label for="cat-gender">Género *</label>
-              <select id="cat-gender" name="gender" required>
-                <option value="">Seleccionar...</option>
-                <option value="male">Macho</option>
-                <option value="female">Hembra</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-size">Tamaño *</label>
-              <select id="cat-size" name="size" required>
-                <option value="">Seleccionar...</option>
-                <option value="small">Pequeño</option>
-                <option value="medium">Mediano</option>
-                <option value="large">Grande</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-status">Estado *</label>
-              <select id="cat-status" name="status" required>
-                <option value="available">Disponible</option>
-                <option value="reserved">Reservado</option>
-                <option value="in_treatment">En Tratamiento</option>
-                <option value="adopted">Adoptado</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-description">Descripción *</label>
-              <textarea id="cat-description" name="description" required></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-personality">Personalidad</label>
-              <textarea id="cat-personality" name="personality"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-specialCare">Cuidados Especiales</label>
-              <textarea id="cat-specialCare" name="specialCare"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-healthConditions"
-                >Condiciones de Salud (separadas por coma)</label
-              >
-              <input
-                type="text"
-                id="cat-healthConditions"
-                name="healthConditions"
-                placeholder="Ej: Displasia, Artritis"
-              />
-            </div>
-
-            <div class="form-group-row">
-              <label>
-                <input type="checkbox" id="cat-vaccinated" name="vaccinated" />
-                Vacunado
-              </label>
-            </div>
-
-            <div class="form-group-row">
-              <label>
-                <input type="checkbox" id="cat-sterilized" name="sterilized" />
-                Esterilizado
-              </label>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-images">URLs de Imágenes (separadas por coma)</label>
-              <input
-                type="text"
-                id="cat-images"
-                name="images"
-                placeholder="Ej: http://ejemplo.com/img1.jpg, http://ejemplo.com/img2.jpg"
-              />
-            </div>
-
-            <div class="form-group" id="cat-existing-images-section" style="display: none;">
-              <label>Imágenes Actuales</label>
-              <div
-                id="cat-existing-images"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;"
-              >
-              </div>
-              <small
-                id="cat-delete-images-legend"
-                style="display: none; margin-top: 0.5rem; color: var(--primary-dark);"
-              >
-                Guarde los cambios para eliminar imágenes
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="cat-image-files">O Subir Imágenes desde tu Computadora</label>
-              <input
-                type="file"
-                id="cat-image-files"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                multiple
-              />
-              <small
-                style="display: block; margin-top: 0.5rem; color: var(--primary-dark);"
-              >
-                Formatos permitidos: JPG, PNG, WebP. Tamaño máximo: 5MB por imagen.
-              </small>
-              <div
-                id="cat-image-preview"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 1rem;"
-              >
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn" id="cat-submit-btn">Guardar</button>
-              <button type="button" class="btn btn-secondary" id="cat-cancel-btn"
-                >Cancelar</button
-              >
-            </div>
-          </form>
-        </div>
-
-        <div style="margin-top: 3rem;">
-          <h2>Lista de Gatos</h2>
-          <ul class="dogs-list" id="cats-list">
-            <!-- Cats will be loaded here -->
-          </ul>
-        </div>
-        </div><!-- end cats-section -->
-
       </div>
     </div>
   </div>
@@ -351,8 +224,15 @@ import Layout from "../layouts/Layout.astro";
   const passwordInput = document.getElementById("admin-password") as HTMLInputElement;
   const authMessage = document.getElementById("auth-message");
   const adminMessage = document.getElementById("admin-message");
+  const addDogTab = document.getElementById("add-dog-tab");
+  const manageDogsTab = document.getElementById("manage-dogs-tab");
+  const dogFormSection = document.getElementById("dog-form-section");
+  const adminListSection = document.getElementById("admin-list-section");
   const dogForm = document.getElementById("dog-form") as HTMLFormElement;
   const dogsList = document.getElementById("dogs-list");
+  const adminSearch = document.getElementById("admin-search") as HTMLInputElement | null;
+  const adminSpeciesFilter = document.getElementById("admin-species-filter") as HTMLSelectElement | null;
+  const adminStatusFilter = document.getElementById("admin-status-filter") as HTMLSelectElement | null;
   const formTitle = document.getElementById("form-title");
   const dogIdInput = document.getElementById("dog-id") as HTMLInputElement;
   const cancelBtn = document.getElementById("cancel-btn");
@@ -364,38 +244,7 @@ import Layout from "../layouts/Layout.astro";
   
   let currentDogImages: string[] = [];
   let pendingImageDeletes = new Set<string>();
-
-  // Tab switching
-  const tabs = document.querySelectorAll<HTMLButtonElement>(".admin-tab");
-  const dogsSection = document.getElementById("dogs-section");
-  const catsSection = document.getElementById("cats-section");
-
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      tabs.forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-      const selected = tab.dataset.tab;
-      if (dogsSection && catsSection) {
-        dogsSection.style.display = selected === "dogs" ? "block" : "none";
-        catsSection.style.display = selected === "cats" ? "block" : "none";
-      }
-    });
-  });
-
-  // Cat-specific DOM references
-  const catForm = document.getElementById("cat-form") as HTMLFormElement;
-  const catsList = document.getElementById("cats-list");
-  const catFormTitle = document.getElementById("cat-form-title");
-  const catIdInput = document.getElementById("cat-id") as HTMLInputElement;
-  const catCancelBtn = document.getElementById("cat-cancel-btn");
-  const catImageFilesInput = document.getElementById("cat-image-files") as HTMLInputElement;
-  const catImagePreview = document.getElementById("cat-image-preview");
-  const catExistingImagesSection = document.getElementById("cat-existing-images-section");
-  const catExistingImagesContainer = document.getElementById("cat-existing-images");
-  const catDeleteImagesLegend = document.getElementById("cat-delete-images-legend");
-
-  let currentCatImages: string[] = [];
-  let pendingCatImageDeletes = new Set<string>();
+  let allPets: any[] = [];
 
   function getAuthHeaders(withJson = false): Record<string, string> {
     return {
@@ -411,6 +260,63 @@ import Layout from "../layouts/Layout.astro";
       .filter((item) => item);
   }
 
+  function formatDateInput(value?: string | Date | null): string {
+    if (!value) return "";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+
+    return date.toISOString().slice(0, 10);
+  }
+
+  function estimateBirthDateFromAge(age?: number): string {
+    if (typeof age !== "number" || Number.isNaN(age)) return "";
+
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - Math.max(age, 0));
+    return formatDateInput(date);
+  }
+
+  function showAdminView(view: "add" | "manage") {
+    const isAddView = view === "add";
+
+    if (dogFormSection) dogFormSection.style.display = isAddView ? "block" : "none";
+    if (adminListSection) adminListSection.style.display = isAddView ? "none" : "block";
+    addDogTab?.classList.toggle("active", isAddView);
+    manageDogsTab?.classList.toggle("active", !isAddView);
+  }
+
+  function getSpeciesLabel(species = "dog") {
+    return species === "cat" ? "Gatito" : "Perrito";
+  }
+
+  function getStatusLabel(status: string) {
+    return status === "available"
+      ? "Disponible"
+      : status === "adopted"
+        ? "Adoptado"
+        : status === "in_treatment"
+          ? "En Tratamiento"
+          : "Reservado";
+  }
+
+  function getFilteredPets() {
+    const search = adminSearch?.value.trim().toLowerCase() || "";
+    const species = adminSpeciesFilter?.value || "all";
+    const status = adminStatusFilter?.value || "all";
+
+    return allPets.filter((pet) => {
+      const petSpecies = pet.species || "dog";
+      const matchesSpecies = species === "all" || petSpecies === species;
+      const matchesStatus = status === "all" || pet.status === status;
+      const matchesSearch =
+        !search ||
+        `${pet.name || ""} ${pet.breed || ""}`.toLowerCase().includes(search);
+
+      return matchesSpecies && matchesStatus && matchesSearch;
+    });
+  }
+
   function resetDogForm() {
     dogForm.reset();
     dogIdInput.value = "";
@@ -420,7 +326,7 @@ import Layout from "../layouts/Layout.astro";
     if (existingImagesSection) existingImagesSection.style.display = "none";
     if (existingImagesContainer) existingImagesContainer.innerHTML = "";
     if (deleteImagesLegend) deleteImagesLegend.style.display = "none";
-    if (formTitle) formTitle.textContent = "Agregar Nuevo Perro";
+    if (formTitle) formTitle.textContent = "Agregar nueva mascota";
   }
 
   function renderExistingImages() {
@@ -591,14 +497,29 @@ import Layout from "../layouts/Layout.astro";
     if (passwordInput) passwordInput.value = "";
   });
 
+  addDogTab?.addEventListener("click", () => {
+    resetDogForm();
+    showAdminView("add");
+  });
+
+  manageDogsTab?.addEventListener("click", () => {
+    resetDogForm();
+    showAdminView("manage");
+    loadDogs();
+  });
+
   function showAdminPanel() {
     if (loginSection && adminPanel) {
       loginSection.style.display = "none";
       adminPanel.style.display = "block";
     }
+    showAdminView("manage");
     loadDogs();
-    loadCats();
   }
+
+  adminSearch?.addEventListener("input", renderPetsList);
+  adminSpeciesFilter?.addEventListener("change", renderPetsList);
+  adminStatusFilter?.addEventListener("change", renderPetsList);
 
   async function validateAndShowAdminPanel() {
     try {
@@ -662,12 +583,13 @@ import Layout from "../layouts/Layout.astro";
         data[key] = [...keptExistingImages, ...urlImages, ...uploadedUrls];
       } else if (key === "vaccinated" || key === "sterilized") {
         data[key] = (document.getElementById(key) as HTMLInputElement).checked;
-      } else if (key === "age") {
-        data[key] = parseInt(value as string);
       } else {
         data[key] = value;
       }
     });
+
+    data.vaccinated = (document.getElementById("vaccinated") as HTMLInputElement).checked;
+    data.sterilized = (document.getElementById("sterilized") as HTMLInputElement).checked;
 
     if (!data.images || data.images.length === 0) {
       data.images = [...keptExistingImages, ...uploadedUrls];
@@ -678,9 +600,11 @@ import Layout from "../layouts/Layout.astro";
 
   function fillDogForm(dog: any) {
     dogIdInput.value = dog._id;
+    (document.getElementById("species") as HTMLSelectElement).value = dog.species || "dog";
     (document.getElementById("name") as HTMLInputElement).value = dog.name;
     (document.getElementById("breed") as HTMLInputElement).value = dog.breed;
-    (document.getElementById("age") as HTMLInputElement).value = dog.age;
+    (document.getElementById("approximateBirthDate") as HTMLInputElement).value =
+      formatDateInput(dog.approximateBirthDate) || estimateBirthDateFromAge(dog.age);
     (document.getElementById("gender") as HTMLSelectElement).value = dog.gender;
     (document.getElementById("size") as HTMLSelectElement).value = dog.size;
     (document.getElementById("status") as HTMLSelectElement).value = dog.status;
@@ -698,11 +622,12 @@ import Layout from "../layouts/Layout.astro";
       dog.sterilized;
 
     currentDogImages = [...dog.images];
-  pendingImageDeletes = new Set();
+    pendingImageDeletes = new Set();
     renderExistingImages();
     (document.getElementById("images") as HTMLInputElement).value = "";
 
-    if (formTitle) formTitle.textContent = "Editar Perro";
+    if (formTitle) formTitle.textContent = "Editar mascota";
+    showAdminView("add");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -724,12 +649,64 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
+  function renderPetsList() {
+    const pets = getFilteredPets();
+
+    if (dogsList) {
+      dogsList.replaceChildren();
+
+      pets.forEach((pet: any) => {
+        const item = document.createElement("li");
+
+        const details = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = pet.name;
+
+        const meta = document.createElement("span");
+        meta.className = "admin-pet-meta";
+        meta.textContent = `${getSpeciesLabel(pet.species)} · ${pet.breed}`;
+
+        const status = document.createElement("span");
+        status.className = `dog-status status-${pet.status}`;
+        status.textContent = getStatusLabel(pet.status);
+
+        details.append(name, meta, status);
+
+        const actions = document.createElement("div");
+        actions.className = "dog-actions";
+
+        const editButton = document.createElement("button");
+        editButton.className = "btn";
+        editButton.dataset.action = "edit";
+        editButton.dataset.id = pet._id;
+        editButton.textContent = "Editar";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-danger";
+        deleteButton.dataset.action = "delete";
+        deleteButton.dataset.id = pet._id;
+        deleteButton.textContent = "Eliminar";
+
+        actions.append(editButton, deleteButton);
+        item.append(details, actions);
+        dogsList.appendChild(item);
+      });
+
+      if (pets.length === 0) {
+        const item = document.createElement("li");
+        item.className = "admin-empty-row";
+        item.textContent = "No hay mascotas que coincidan con esos filtros.";
+        dogsList.appendChild(item);
+      }
+    }
+  }
+
   async function loadDogs() {
     try {
-      const response = await fetch("/api/dogs");
+      const response = await fetch("/api/pets");
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || "Error al cargar los perros");
+        throw new Error(errorData?.error || "Error al cargar las mascotas");
       }
 
       const dogs = await response.json();
@@ -737,28 +714,10 @@ import Layout from "../layouts/Layout.astro";
         throw new Error("Formato de respuesta inválido");
       }
 
-      if (dogsList) {
-        dogsList.innerHTML = dogs
-          .map(
-            (dog: any) => `
-          <li>
-            <div>
-              <strong>${dog.name}</strong> - ${dog.breed} -
-              <span class="dog-status status-${dog.status}">
-                ${dog.status === "available" ? "Disponible" : dog.status === "adopted" ? "Adoptado" : dog.status === "in_treatment" ? "En Tratamiento" : "Reservado"}
-              </span>
-            </div>
-            <div class="dog-actions">
-              <button class="btn" data-action="edit" data-id="${dog._id}">Editar</button>
-              <button class="btn btn-danger" data-action="delete" data-id="${dog._id}">Eliminar</button>
-            </div>
-          </li>
-        `,
-          )
-          .join("");
-      }
+      allPets = dogs;
+      renderPetsList();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error al cargar los perros";
+      const message = error instanceof Error ? error.message : "Error al cargar las mascotas";
       showAdminMessage(message, "error");
     }
   }
@@ -780,7 +739,7 @@ import Layout from "../layouts/Layout.astro";
     const data = buildDogPayload(formData, uploadedUrls);
 
     const dogId = dogIdInput.value;
-    const url = dogId ? `/api/dogs/${dogId}` : "/api/dogs";
+    const url = dogId ? `/api/pets/${dogId}` : "/api/pets";
     const method = dogId ? "PUT" : "POST";
 
     try {
@@ -792,55 +751,57 @@ import Layout from "../layouts/Layout.astro";
 
       if (response.ok) {
         showAdminMessage(
-          dogId ? "Perro actualizado correctamente" : "Perro agregado correctamente",
+          dogId ? "Mascota actualizada correctamente" : "Mascota agregada correctamente",
           "success",
         );
         resetDogForm();
+        showAdminView("manage");
         loadDogs();
       } else {
         const error = await response.json();
-        showAdminMessage(error.error || "Error al guardar el perro", "error");
+        showAdminMessage(error.error || "Error al guardar la mascota", "error");
       }
     } catch (error) {
-      showAdminMessage("Error al guardar el perro", "error");
+      showAdminMessage("Error al guardar la mascota", "error");
     }
   });
 
   cancelBtn?.addEventListener("click", () => {
     resetDogForm();
+    showAdminView("manage");
   });
 
   async function editDog(id: string) {
     try {
-      const response = await fetch(`/api/dogs/${id}`);
+      const response = await fetch(`/api/pets/${id}`);
       const dog = await response.json();
 
       fillDogForm(dog);
     } catch (error) {
-      showAdminMessage("Error al cargar el perro", "error");
+      showAdminMessage("Error al cargar la mascota", "error");
     }
   }
 
   async function deleteDog(id: string) {
-    if (!confirm("¿Estás seguro de que quieres eliminar este perro?")) {
+    if (!confirm("¿Estás seguro de que quieres eliminar esta mascota?")) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/dogs/${id}`, {
+      const response = await fetch(`/api/pets/${id}`, {
         method: "DELETE",
         headers: getAuthHeaders(),
       });
 
       if (response.ok) {
-        showAdminMessage("Perro eliminado correctamente", "success");
+        showAdminMessage("Mascota eliminada correctamente", "success");
         loadDogs();
       } else {
         const error = await response.json();
-        showAdminMessage(error.error || "Error al eliminar el perro", "error");
+        showAdminMessage(error.error || "Error al eliminar la mascota", "error");
       }
     } catch (error) {
-      showAdminMessage("Error al eliminar el perro", "error");
+      showAdminMessage("Error al eliminar la mascota", "error");
     }
   }
 
@@ -857,374 +818,6 @@ import Layout from "../layouts/Layout.astro";
       await editDog(id);
     } else if (action === "delete") {
       await deleteDog(id);
-    }
-  });
-
-  // ---- Cat functions ----
-
-  function resetCatForm() {
-    catForm.reset();
-    catIdInput.value = "";
-    currentCatImages = [];
-    pendingCatImageDeletes = new Set();
-    if (catImagePreview) catImagePreview.innerHTML = "";
-    if (catExistingImagesSection) catExistingImagesSection.style.display = "none";
-    if (catExistingImagesContainer) catExistingImagesContainer.innerHTML = "";
-    if (catDeleteImagesLegend) catDeleteImagesLegend.style.display = "none";
-    if (catFormTitle) catFormTitle.textContent = "Agregar Nuevo Gato";
-  }
-
-  function renderExistingCatImages() {
-    if (!catExistingImagesSection || !catExistingImagesContainer) return;
-
-    catExistingImagesContainer.innerHTML = "";
-
-    if (currentCatImages.length === 0) {
-      catExistingImagesSection.style.display = "none";
-      if (catDeleteImagesLegend) catDeleteImagesLegend.style.display = "none";
-      return;
-    }
-
-    catExistingImagesSection.style.display = "block";
-
-    currentCatImages.forEach((imageUrl: string) => {
-      const isPendingDelete = pendingCatImageDeletes.has(imageUrl);
-
-      const imageWrapper = document.createElement("div");
-      imageWrapper.style.position = "relative";
-      imageWrapper.style.border = "2px solid var(--border)";
-      imageWrapper.style.borderRadius = "4px";
-      imageWrapper.style.overflow = "hidden";
-
-      const img = document.createElement("img");
-      img.src = imageUrl;
-      img.style.width = "100%";
-      img.style.height = "120px";
-      img.style.objectFit = "cover";
-      img.style.display = "block";
-      img.style.filter = isPendingDelete ? "grayscale(100%)" : "none";
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "×";
-      deleteBtn.type = "button";
-      deleteBtn.style.position = "absolute";
-      deleteBtn.style.top = "4px";
-      deleteBtn.style.right = "4px";
-      deleteBtn.style.background = "#c33";
-      deleteBtn.style.color = "white";
-      deleteBtn.style.border = "none";
-      deleteBtn.style.borderRadius = "50%";
-      deleteBtn.style.width = "24px";
-      deleteBtn.style.height = "24px";
-      deleteBtn.style.cursor = "pointer";
-      deleteBtn.style.fontSize = "18px";
-      deleteBtn.style.lineHeight = "1";
-      deleteBtn.style.display = "flex";
-      deleteBtn.style.alignItems = "center";
-      deleteBtn.style.justifyContent = "center";
-      deleteBtn.style.zIndex = "2";
-      deleteBtn.style.opacity = isPendingDelete ? "0" : "1";
-      deleteBtn.style.pointerEvents = isPendingDelete ? "none" : "auto";
-
-      deleteBtn.addEventListener("click", () => {
-        pendingCatImageDeletes.add(imageUrl);
-        renderExistingCatImages();
-      });
-
-      if (isPendingDelete) {
-        const overlay = document.createElement("div");
-        overlay.style.position = "absolute";
-        overlay.style.inset = "0";
-        overlay.style.background = "rgba(40, 40, 40, 0.6)";
-        overlay.style.display = "flex";
-        overlay.style.flexDirection = "column";
-        overlay.style.alignItems = "center";
-        overlay.style.justifyContent = "center";
-        overlay.style.gap = "0.35rem";
-        overlay.style.zIndex = "1";
-
-        const pendingIcon = document.createElement("span");
-        pendingIcon.textContent = "×";
-        pendingIcon.style.fontSize = "1.35rem";
-        pendingIcon.style.fontWeight = "700";
-        pendingIcon.style.color = "#fff";
-        pendingIcon.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
-
-        const pendingText = document.createElement("small");
-        pendingText.textContent = "Pendiente de eliminar";
-        pendingText.style.fontWeight = "600";
-        pendingText.style.color = "#fff";
-        pendingText.style.background = "rgba(0, 0, 0, 0.35)";
-        pendingText.style.padding = "0.2rem 0.35rem";
-        pendingText.style.borderRadius = "4px";
-        pendingText.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
-
-        const undoBtn = document.createElement("button");
-        undoBtn.type = "button";
-        undoBtn.className = "btn btn-danger";
-        undoBtn.textContent = "Deshacer";
-        undoBtn.style.padding = "0.25rem 0.5rem";
-        undoBtn.style.fontSize = "0.8rem";
-        undoBtn.style.minWidth = "auto";
-
-        undoBtn.addEventListener("click", () => {
-          pendingCatImageDeletes.delete(imageUrl);
-          renderExistingCatImages();
-        });
-
-        overlay.appendChild(pendingIcon);
-        overlay.appendChild(pendingText);
-        overlay.appendChild(undoBtn);
-        imageWrapper.appendChild(overlay);
-      }
-
-      imageWrapper.appendChild(img);
-      imageWrapper.appendChild(deleteBtn);
-      catExistingImagesContainer.appendChild(imageWrapper);
-    });
-
-    if (catDeleteImagesLegend) {
-      catDeleteImagesLegend.style.display = pendingCatImageDeletes.size > 0 ? "block" : "none";
-    }
-  }
-
-  catImageFilesInput?.addEventListener("change", () => {
-    if (!catImagePreview) return;
-
-    catImagePreview.innerHTML = "";
-    const files = catImageFilesInput.files;
-
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-          const img = document.createElement("img");
-          img.src = e.target?.result as string;
-          img.style.width = "100%";
-          img.style.height = "100px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "4px";
-          img.style.border = "2px solid var(--border)";
-          catImagePreview.appendChild(img);
-        };
-
-        if (file) reader.readAsDataURL(file);
-      }
-    }
-  });
-
-  async function uploadSelectedCatImages() {
-    const imageFiles = catImageFilesInput?.files;
-    if (!imageFiles || imageFiles.length === 0) return [];
-
-    const uploadFormData = new FormData();
-    for (let i = 0; i < imageFiles.length; i++) {
-      const file = imageFiles[i];
-      if (file) uploadFormData.append("images", file);
-    }
-
-    const uploadResponse = await fetch("/api/upload", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: uploadFormData,
-    });
-
-    if (!uploadResponse.ok) {
-      const error = await uploadResponse.json().catch(() => null);
-      throw new Error(error?.error || "Error al subir imágenes");
-    }
-
-    const result = await uploadResponse.json();
-    return result.urls || [];
-  }
-
-  function buildCatPayload(formData: FormData, uploadedUrls: string[]) {
-    const data: any = {};
-    const keptExistingImages = currentCatImages.filter(
-      (imageUrl) => !pendingCatImageDeletes.has(imageUrl),
-    );
-
-    formData.forEach((value, key) => {
-      if (key === "healthConditions" && value) {
-        data[key] = parseCommaSeparated(value as string);
-      } else if (key === "images" && value) {
-        const urlImages = parseCommaSeparated(value as string);
-        data[key] = [...keptExistingImages, ...urlImages, ...uploadedUrls];
-      } else if (key === "vaccinated" || key === "sterilized") {
-        data[key] = (document.getElementById(`cat-${key}`) as HTMLInputElement).checked;
-      } else if (key === "age") {
-        data[key] = parseInt(value as string);
-      } else {
-        data[key] = value;
-      }
-    });
-
-    if (!data.images || data.images.length === 0) {
-      data.images = [...keptExistingImages, ...uploadedUrls];
-    }
-
-    return data;
-  }
-
-  function fillCatForm(cat: any) {
-    catIdInput.value = cat._id;
-    (document.getElementById("cat-name") as HTMLInputElement).value = cat.name;
-    (document.getElementById("cat-breed") as HTMLInputElement).value = cat.breed;
-    (document.getElementById("cat-age") as HTMLInputElement).value = cat.age;
-    (document.getElementById("cat-gender") as HTMLSelectElement).value = cat.gender;
-    (document.getElementById("cat-size") as HTMLSelectElement).value = cat.size;
-    (document.getElementById("cat-status") as HTMLSelectElement).value = cat.status;
-    (document.getElementById("cat-description") as HTMLTextAreaElement).value = cat.description;
-    (document.getElementById("cat-personality") as HTMLTextAreaElement).value = cat.personality || "";
-    (document.getElementById("cat-specialCare") as HTMLTextAreaElement).value = cat.specialCare || "";
-    (document.getElementById("cat-healthConditions") as HTMLInputElement).value = cat.healthConditions.join(", ");
-    (document.getElementById("cat-vaccinated") as HTMLInputElement).checked = cat.vaccinated;
-    (document.getElementById("cat-sterilized") as HTMLInputElement).checked = cat.sterilized;
-
-    currentCatImages = [...cat.images];
-    pendingCatImageDeletes = new Set();
-    renderExistingCatImages();
-    (document.getElementById("cat-images") as HTMLInputElement).value = "";
-
-    if (catFormTitle) catFormTitle.textContent = "Editar Gato";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  async function loadCats() {
-    try {
-      const response = await fetch("/api/cats");
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || "Error al cargar los gatos");
-      }
-
-      const cats = await response.json();
-      if (!Array.isArray(cats)) {
-        throw new Error("Formato de respuesta inválido");
-      }
-
-      if (catsList) {
-        catsList.innerHTML = cats
-          .map(
-            (cat: any) => `
-          <li>
-            <div>
-              <strong>${cat.name}</strong> - ${cat.breed} -
-              <span class="dog-status status-${cat.status}">
-                ${cat.status === "available" ? "Disponible" : cat.status === "adopted" ? "Adoptado" : cat.status === "in_treatment" ? "En Tratamiento" : "Reservado"}
-              </span>
-            </div>
-            <div class="dog-actions">
-              <button class="btn" data-action="edit" data-id="${cat._id}">Editar</button>
-              <button class="btn btn-danger" data-action="delete" data-id="${cat._id}">Eliminar</button>
-            </div>
-          </li>
-        `,
-          )
-          .join("");
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Error al cargar los gatos";
-      showAdminMessage(message, "error");
-    }
-  }
-
-  catForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(catForm);
-    let uploadedUrls: string[] = [];
-
-    try {
-      uploadedUrls = await uploadSelectedCatImages();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Error al subir imágenes";
-      showAdminMessage(message, "error");
-      return;
-    }
-
-    const data = buildCatPayload(formData, uploadedUrls);
-
-    const catId = catIdInput.value;
-    const url = catId ? `/api/cats/${catId}` : "/api/cats";
-    const method = catId ? "PUT" : "POST";
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders(true),
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        showAdminMessage(
-          catId ? "Gato actualizado correctamente" : "Gato agregado correctamente",
-          "success",
-        );
-        resetCatForm();
-        loadCats();
-      } else {
-        const error = await response.json();
-        showAdminMessage(error.error || "Error al guardar el gato", "error");
-      }
-    } catch (error) {
-      showAdminMessage("Error al guardar el gato", "error");
-    }
-  });
-
-  catCancelBtn?.addEventListener("click", () => {
-    resetCatForm();
-  });
-
-  async function editCat(id: string) {
-    try {
-      const response = await fetch(`/api/cats/${id}`);
-      const cat = await response.json();
-
-      fillCatForm(cat);
-    } catch (error) {
-      showAdminMessage("Error al cargar el gato", "error");
-    }
-  }
-
-  async function deleteCat(id: string) {
-    if (!confirm("¿Estás seguro de que quieres eliminar este gato?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/cats/${id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
-
-      if (response.ok) {
-        showAdminMessage("Gato eliminado correctamente", "success");
-        loadCats();
-      } else {
-        const error = await response.json();
-        showAdminMessage(error.error || "Error al eliminar el gato", "error");
-      }
-    } catch (error) {
-      showAdminMessage("Error al eliminar el gato", "error");
-    }
-  }
-
-  catsList?.addEventListener("click", async (event) => {
-    const target = event.target as HTMLElement;
-    const button = target.closest("button[data-action][data-id]") as HTMLButtonElement;
-    if (!button) return;
-
-    const action = button.dataset.action;
-    const id = button.dataset.id;
-    if (!id) return;
-
-    if (action === "edit") {
-      await editCat(id);
-    } else if (action === "delete") {
-      await deleteCat(id);
     }
   });
 </script>

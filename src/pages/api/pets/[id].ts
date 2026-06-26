@@ -1,38 +1,34 @@
 import type { APIRoute } from 'astro';
-import Cat from '../../../lib/models/Cat.js';
+import mongoose from 'mongoose';
+import Pet from '../../../lib/models/Pet.js';
 import { connectDB } from '../../../lib/db';
+import { getPetById } from '../../../lib/pets';
 import { checkAdmin } from '../../../utils/auth';
 
-// Get single cat
 export const GET: APIRoute = async ({ params }) => {
   try {
-    await connectDB();
     const { id } = params;
-    const cat = await Cat.findById(id);
+    const pet = await getPetById(id);
 
-    if (!cat) {
-      return new Response(JSON.stringify({ error: 'Cat not found' }), {
+    if (!pet) {
+      return new Response(JSON.stringify({ error: 'Pet not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(cat), {
+    return new Response(JSON.stringify(pet), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };
 
-// Update cat
 export const PUT: APIRoute = async (context) => {
   try {
     if (!checkAdmin(context)) {
@@ -44,12 +40,19 @@ export const PUT: APIRoute = async (context) => {
 
     await connectDB();
     const { id } = context.params;
-    const body = await context.request.json();
+    if (!id || !mongoose.isValidObjectId(id)) {
+      return new Response(JSON.stringify({ error: 'Invalid pet id' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
+    const body = await context.request.json();
     const allowedFields = [
+      'species',
       'name',
       'breed',
-      'age',
+      'approximateBirthDate',
       'gender',
       'size',
       'status',
@@ -69,34 +72,30 @@ export const PUT: APIRoute = async (context) => {
       }
     }
 
-    const cat = await Cat.findByIdAndUpdate(id, updateData, {
+    const pet = await Pet.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
 
-    if (!cat) {
-      return new Response(JSON.stringify({ error: 'Cat not found' }), {
+    if (!pet) {
+      return new Response(JSON.stringify({ error: 'Pet not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(cat), {
+    return new Response(JSON.stringify(pet), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };
 
-// Delete cat
 export const DELETE: APIRoute = async (context) => {
   try {
     if (!checkAdmin(context)) {
@@ -108,26 +107,30 @@ export const DELETE: APIRoute = async (context) => {
 
     await connectDB();
     const { id } = context.params;
-    const cat = await Cat.findByIdAndDelete(id);
+    if (!id || !mongoose.isValidObjectId(id)) {
+      return new Response(JSON.stringify({ error: 'Invalid pet id' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-    if (!cat) {
-      return new Response(JSON.stringify({ error: 'Cat not found' }), {
+    const pet = await Pet.findByIdAndDelete(id);
+
+    if (!pet) {
+      return new Response(JSON.stringify({ error: 'Pet not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ message: 'Cat deleted successfully' }), {
+    return new Response(JSON.stringify({ message: 'Pet deleted successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };

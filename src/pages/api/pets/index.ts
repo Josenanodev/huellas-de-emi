@@ -1,30 +1,25 @@
 import type { APIRoute } from 'astro';
-import type { ICat } from '../../../lib/models/Cat';
-import Cat from '../../../lib/models/Cat.js';
+import type { IPet } from '../../../lib/models/Pet';
+import Pet from '../../../lib/models/Pet.js';
 import { checkAdmin } from '../../../utils/auth';
 import { connectDB } from '../../../lib/db';
+import { listPets } from '../../../lib/pets';
 
-// Get all cats
 export const GET: APIRoute = async () => {
   try {
-    await connectDB();
-    const cats = await Cat.find().sort({ createdAt: -1 });
-    return new Response(JSON.stringify(cats), {
+    const pets = await listPets();
+    return new Response(JSON.stringify(pets), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };
 
-// Create cat (admin only)
 export const POST: APIRoute = async (context) => {
   try {
     await connectDB();
@@ -36,13 +31,11 @@ export const POST: APIRoute = async (context) => {
     }
 
     const body = await context.request.json();
-    console.log('Create cat request body:', body);
-
-    // Only allow specific fields to prevent injection of unexpected data
     const allowedFields = [
+      'species',
       'name',
       'breed',
-      'age',
+      'approximateBirthDate',
       'gender',
       'size',
       'status',
@@ -59,27 +52,34 @@ export const POST: APIRoute = async (context) => {
     type AllowedField = (typeof allowedFields)[number];
     const bodyData = body as Partial<Record<AllowedField, unknown>>;
 
-    const catData: Partial<ICat> = {};
+    const petData: Partial<IPet> = {};
     for (const field of allowedFields) {
       if (bodyData[field] !== undefined) {
-        (catData as Record<AllowedField, unknown>)[field] = bodyData[field];
+        (petData as Record<AllowedField, unknown>)[field] = bodyData[field];
       }
     }
 
-    const newCat = new Cat(catData);
-    const savedCat = await newCat.save();
+    if (!petData.approximateBirthDate) {
+      return new Response(
+        JSON.stringify({ error: 'La fecha aproximada de nacimiento es requerida' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
 
-    return new Response(JSON.stringify(savedCat), {
+    const newPet = new Pet(petData);
+    const savedPet = await newPet.save();
+
+    return new Response(JSON.stringify(savedPet), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };

@@ -1,0 +1,153 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getPetById } from "../../lib/pets";
+import { formatPetAge } from "../../utils/petAge";
+import type { Pet } from "../../types";
+
+const { id } = Astro.params;
+
+let pet: Pet | null = null;
+let error: string | null = null;
+
+try {
+  pet = await getPetById(id);
+  if (!pet) {
+    error = "Mascota no encontrada";
+  }
+} catch (e) {
+  error = "Error al cargar la mascota";
+}
+
+const whatsappMessage = pet
+  ? encodeURIComponent(
+      `Hola, me gustaría obtener más información sobre la adopción de ${pet.name}.`,
+    )
+  : "";
+
+const speciesLabel = pet?.species === "cat" ? "Gatito" : "Perrito";
+---
+
+<Layout title={pet ? pet.name : "Mascota"}>
+  <div class="container page-stack">
+    {error ? (
+      <div class="error" role="alert">{error}</div>
+    ) : pet ? (
+      <article class={`dog-detail species-${pet.species}`}>
+        <div class="dog-detail-header">
+          <div class="dog-detail-images">
+            {pet.images.length > 0 ? (
+              pet.images.map((image: string) => (
+                <img
+                  src={image}
+                  alt={pet.name}
+                  class="dog-detail-image"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))
+            ) : (
+              <img src="/images/default-dog.svg" alt={pet.name} class="dog-detail-image" />
+            )}
+          </div>
+
+          <div class="dog-detail-info">
+            <p class="section-kicker">Historia de adopción</p>
+            <p class="species-label">{speciesLabel}</p>
+            <h1>{pet.name}</h1>
+            <span class={`dog-status status-${pet.status}`}>
+              {pet.status === "available" && "Disponible"}
+              {pet.status === "adopted" && "Adoptado"}
+              {pet.status === "in_treatment" && "En tratamiento"}
+              {pet.status === "reserved" && "Reservado"}
+            </span>
+
+            <div class="info-grid">
+              <div class="info-item info-breed">
+                <strong>Raza</strong>
+                <span>{pet.breed}</span>
+              </div>
+              <div class="info-item info-age">
+                <strong>Edad</strong>
+                <span>{formatPetAge(pet)}</span>
+              </div>
+              <div class="info-item info-gender">
+                <strong>Género</strong>
+                <span>{pet.gender === "male" ? "Macho" : "Hembra"}</span>
+              </div>
+              <div class="info-item info-size">
+                <strong>Tamaño</strong>
+                <span>
+                  {pet.size === "small" && "Pequeño"}
+                  {pet.size === "medium" && "Mediano"}
+                  {pet.size === "large" && "Grande"}
+                </span>
+              </div>
+              <div class="info-item info-vaccine">
+                <strong>Vacunado</strong>
+                <span>{pet.vaccinated ? "Sí" : "No"}</span>
+              </div>
+              <div class="info-item info-care">
+                <strong>Esterilizado</strong>
+                <span>{pet.sterilized ? "Sí" : "No"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-content">
+          <section class="detail-section">
+            <h2>Sobre {pet.name}</h2>
+            <p>{pet.description}</p>
+          </section>
+
+          {pet.personality && (
+            <section class="detail-section">
+              <h2>Personalidad</h2>
+              <p>{pet.personality}</p>
+            </section>
+          )}
+
+          {pet.healthConditions.length > 0 && (
+            <section class="detail-section">
+              <h2>Condiciones de salud</h2>
+              <ul class="soft-list">
+                {pet.healthConditions.map((condition: string) => (
+                  <li>{condition}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {pet.specialCare && (
+            <section class="detail-section">
+              <h2>Cuidados especiales</h2>
+              <p>{pet.specialCare}</p>
+            </section>
+          )}
+        </div>
+
+        {pet.status === "available" && (
+          <section class="contact-section">
+            <div>
+              <p class="section-kicker">Adopción</p>
+              <h2>¿Te gustaría adoptar a {pet.name}?</h2>
+              <p>Escríbenos por WhatsApp y te contamos más sobre su proceso.</p>
+            </div>
+            <a
+              href={`https://wa.me/523313296314?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn whatsapp-btn"
+            >
+              Enviar WhatsApp
+            </a>
+          </section>
+        )}
+      </article>
+    ) : null}
+
+    <div class="back-link">
+      <a href="/" class="btn btn-secondary">Volver al catálogo</a>
+    </div>
+  </div>
+</Layout>
