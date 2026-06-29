@@ -223,9 +223,33 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </div>
   </div>
+
+  <div id="error-modal" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="error-modal-title" hidden>
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="error-modal-title" class="modal-title"></h2>
+      </div>
+      <p id="error-modal-message" class="modal-message"></p>
+      <ul id="error-modal-details" class="modal-details"></ul>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="error-modal-close">Entendido</button>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <script>
+  import {
+    createNetworkError,
+    parseApiError,
+    validateImageFiles,
+    validateImageUrls,
+    validateRequiredFields,
+    type MascotFormError,
+  } from "../utils/mascotFormErrors";
+
   let adminPassword = "";
 
   const loginSection = document.getElementById("login-section");
@@ -252,6 +276,12 @@ import Layout from "../layouts/Layout.astro";
   const existingImagesSection = document.getElementById("existing-images-section");
   const existingImagesContainer = document.getElementById("existing-images");
   const deleteImagesLegend = document.getElementById("delete-images-legend");
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
+  const errorModal = document.getElementById("error-modal");
+  const errorModalTitle = document.getElementById("error-modal-title");
+  const errorModalMessage = document.getElementById("error-modal-message");
+  const errorModalDetails = document.getElementById("error-modal-details");
+  const errorModalCloseBtn = document.getElementById("error-modal-close");
   
   let currentDogImages: string[] = [];
   let pendingImageDeletes = new Set<string>();
@@ -559,21 +589,32 @@ import Layout from "../layouts/Layout.astro";
     const imageFiles = imageFilesInput?.files;
     if (!imageFiles || imageFiles.length === 0) return [];
 
+    const clientValidationError = validateImageFiles(imageFiles);
+    if (clientValidationError) {
+      throw clientValidationError;
+    }
+
     const uploadFormData = new FormData();
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
       if (file) uploadFormData.append("images", file);
     }
 
-    const uploadResponse = await fetch("/api/upload", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: uploadFormData,
-    });
+    let uploadResponse: Response;
+
+    try {
+      uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: uploadFormData,
+      });
+    } catch {
+      throw createNetworkError("upload");
+    }
 
     if (!uploadResponse.ok) {
-      const error = await uploadResponse.json().catch(() => null);
-      throw new Error(error?.error || "Error al subir imágenes");
+      const errorBody = await uploadResponse.json().catch(() => null);
+      throw parseApiError(uploadResponse.status, errorBody?.error, "upload");
     }
 
     const result = await uploadResponse.json();
@@ -660,6 +701,46 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
+  function showErrorModal(error: MascotFormError) {
+    if (!errorModal || !errorModalTitle || !errorModalMessage || !errorModalDetails) return;
+
+    errorModalTitle.textContent = error.title;
+    errorModalMessage.textContent = error.message;
+    errorModalDetails.replaceChildren();
+
+    for (const detail of error.details) {
+      const item = document.createElement("li");
+      item.textContent = detail;
+      errorModalDetails.appendChild(item);
+    }
+
+    errorModal.hidden = false;
+    errorModalCloseBtn?.focus();
+  }
+
+  function hideErrorModal() {
+    if (errorModal) errorModal.hidden = true;
+  }
+
+  function setSubmitLoading(isLoading: boolean) {
+    if (!submitBtn) return;
+
+    submitBtn.disabled = isLoading;
+    submitBtn.textContent = isLoading ? "Guardando..." : "Guardar";
+  }
+
+  errorModalCloseBtn?.addEventListener("click", hideErrorModal);
+  errorModal?.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    if (target.dataset.modalClose !== undefined) hideErrorModal();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && errorModal && !errorModal.hidden) {
+      hideErrorModal();
+    }
+  });
+
   function renderPetsList() {
     const pets = getFilteredPets();
 
@@ -736,14 +817,35 @@ import Layout from "../layouts/Layout.astro";
   dogForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const requiredFieldsError = validateRequiredFields(dogForm);
+    if (requiredFieldsError) {
+      showErrorModal(requiredFieldsError);
+      return;
+    }
+
+    const imageUrls = parseCommaSeparated(
+      (document.getElementById("images") as HTMLInputElement).value,
+    );
+    const imageUrlError = validateImageUrls(imageUrls);
+    if (imageUrlError) {
+      showErrorModal(imageUrlError);
+      return;
+    }
+
     const formData = new FormData(dogForm);
     let uploadedUrls: string[] = [];
+
+    setSubmitLoading(true);
 
     try {
       uploadedUrls = await uploadSelectedImages();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error al subir imágenes";
-      showAdminMessage(message, "error");
+      const mascotError =
+        error && typeof error === "object" && "code" in error
+          ? (error as MascotFormError)
+          : createNetworkError("upload");
+      showErrorModal(mascotError);
+      setSubmitLoading(false);
       return;
     }
 
@@ -769,11 +871,13 @@ import Layout from "../layouts/Layout.astro";
         showAdminView("manage");
         loadDogs();
       } else {
-        const error = await response.json();
-        showAdminMessage(error.error || "Error al guardar la mascota", "error");
+        const errorBody = await response.json().catch(() => null);
+        showErrorModal(parseApiError(response.status, errorBody?.error, "save"));
       }
-    } catch (error) {
-      showAdminMessage("Error al guardar la mascota", "error");
+    } catch {
+      showErrorModal(createNetworkError("save"));
+    } finally {
+      setSubmitLoading(false);
     }
   });
 
@@ -785,11 +889,17 @@ import Layout from "../layouts/Layout.astro";
   async function editDog(id: string) {
     try {
       const response = await fetch(`/api/pets/${id}`);
-      const dog = await response.json();
 
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        showErrorModal(parseApiError(response.status, errorBody?.error, "load"));
+        return;
+      }
+
+      const dog = await response.json();
       fillDogForm(dog);
-    } catch (error) {
-      showAdminMessage("Error al cargar la mascota", "error");
+    } catch {
+      showErrorModal(createNetworkError("load"));
     }
   }
 
