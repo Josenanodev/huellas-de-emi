@@ -31,6 +31,8 @@
   --status-reserved: #b46f81;
   --font-body: "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Quicksand", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html {
@@ -57,6 +59,7 @@ body::before {
   background-size: 92px 92px;
   background-position: 18px 18px;
   opacity: 0.055;
+  animation: backgroundDrift 28s linear infinite;
 }
 
 img {
@@ -107,6 +110,11 @@ a {
   color: var(--primary-dark);
   font-weight: 700;
   text-decoration: none;
+  transition: transform 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.logo:hover {
+  transform: translateY(-1px) rotate(-1deg);
 }
 
 .logo-image {
@@ -118,6 +126,12 @@ a {
   border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow-soft);
+  transition: transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.logo:hover .logo-image {
+  transform: scale(1.035) rotate(2deg);
+  box-shadow: var(--shadow);
 }
 
 .logo-text {
@@ -134,6 +148,7 @@ a {
 }
 
 .nav-links a {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -143,7 +158,30 @@ a {
   font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
-  transition: background-color 0.2s, color 0.2s;
+  overflow: hidden;
+  transition: background-color 0.2s, color 0.2s, transform 180ms var(--ease-out);
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.35rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--ease-out);
+}
+
+.nav-links a:hover {
+  transform: translateY(-1px);
+}
+
+.nav-links a:hover::after {
+  transform: scaleX(1);
 }
 
 .nav-links a::before {
@@ -261,6 +299,7 @@ p {
   gap: 2rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border-soft);
+  animation: fadeLift 520ms var(--ease-out) both;
 }
 
 .hero-copy {
@@ -288,6 +327,7 @@ p {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.76);
   box-shadow: var(--shadow-soft);
+  animation: fadeLift 520ms var(--ease-out) 90ms both;
 }
 
 .search-field {
@@ -331,12 +371,24 @@ p {
   font: inherit;
   font-size: 0.9rem;
   font-weight: 700;
+  transition: color 180ms var(--ease-out), background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 160ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+
+.filter-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.filter-chip:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .filter-chip.active {
   color: var(--primary-dark);
   border-color: var(--border);
   background: var(--surface-soft);
+  animation: softPop 220ms var(--ease-spring);
 }
 
 .stat-pill {
@@ -347,6 +399,25 @@ p {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: var(--shadow-soft);
   text-align: center;
+  animation: fadeLift 520ms var(--ease-out) both;
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+
+.stat-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.stat-pill:nth-child(1) {
+  animation-delay: 80ms;
+}
+
+.stat-pill:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.stat-pill:nth-child(3) {
+  animation-delay: 220ms;
 }
 
 .stat-pill span {
@@ -393,7 +464,24 @@ p {
   border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow-soft);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  animation: cardIn 560ms var(--ease-spring) both;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s var(--ease-out);
+}
+
+.dog-card:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.dog-card:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.dog-card:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.dog-card:nth-child(n + 5) {
+  animation-delay: 280ms;
 }
 
 .dog-card::before {
@@ -411,7 +499,7 @@ p {
 .dog-card:hover {
   border-color: var(--border);
   box-shadow: var(--shadow);
-  transform: translateY(-3px);
+  transform: translateY(-5px);
 }
 
 .dog-image-link {
@@ -426,11 +514,12 @@ p {
   aspect-ratio: 4 / 3;
   height: auto;
   object-fit: cover;
-  transition: transform 0.35s;
+  transition: transform 420ms var(--ease-out), filter 420ms var(--ease-out);
 }
 
 .dog-card:hover .dog-image {
-  transform: scale(1.025);
+  filter: saturate(1.08);
+  transform: scale(1.045);
 }
 
 .dog-info {
@@ -535,6 +624,7 @@ p {
 }
 
 .dog-status {
+  position: relative;
   display: inline-flex;
   width: fit-content;
   align-items: center;
@@ -545,6 +635,8 @@ p {
   background: #fff;
   font-size: 0.78rem;
   font-weight: 700;
+  overflow: hidden;
+  animation: softPop 260ms var(--ease-spring);
 }
 
 .dog-status::before {
@@ -559,6 +651,15 @@ p {
   --status-icon: url("/images/check-circle.svg");
   color: var(--status-available);
   background: var(--surface-sage);
+}
+
+.status-available::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.58) 45%, transparent 72%);
+  transform: translateX(-120%);
+  animation: statusShimmer 3.8s ease-in-out infinite;
 }
 
 .status-adopted {
@@ -612,6 +713,10 @@ p {
   background: var(--primary-dark);
   box-shadow: var(--shadow);
   transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .btn:disabled,
@@ -695,6 +800,7 @@ p {
   gap: 0.75rem;
   align-items: start;
   min-width: 0;
+  animation: fadeLift 520ms var(--ease-out) both;
 }
 
 .pet-gallery-main {
@@ -712,6 +818,13 @@ p {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 180ms var(--ease-out), transform 360ms var(--ease-out), filter 360ms var(--ease-out);
+}
+
+.pet-gallery-image.is-changing {
+  opacity: 0;
+  filter: saturate(0.9);
+  transform: scale(0.985);
 }
 
 .pet-gallery-count {
@@ -771,6 +884,7 @@ p {
 }
 
 .pet-gallery-thumb.active {
+  animation: softPop 220ms var(--ease-spring);
   transform: scale(0.96);
 }
 
@@ -789,6 +903,7 @@ p {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow-soft);
+  animation: fadeLift 520ms var(--ease-out) 120ms both;
 }
 
 .dog-detail-info h1 {
@@ -811,6 +926,13 @@ p {
   border: 1px solid var(--accent-soft);
   border-radius: 8px;
   background: var(--surface-sage);
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.info-item:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-2px);
 }
 
 .info-breed {
@@ -891,6 +1013,7 @@ p {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface-soft);
+  animation: fadeLift 520ms var(--ease-out) both;
 }
 
 .contact-section p:last-child {
@@ -909,6 +1032,13 @@ p {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: var(--shadow-soft);
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.adoption-step:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
 }
 
 .adoption-step span {
@@ -921,6 +1051,11 @@ p {
   color: var(--primary-dark);
   background: var(--surface-butter);
   font-weight: 700;
+  transition: transform 180ms var(--ease-spring);
+}
+
+.adoption-step:hover span {
+  transform: rotate(-4deg) scale(1.05);
 }
 
 .adoption-step p {
@@ -1066,6 +1201,12 @@ p {
   border-color: var(--border);
   background: #fff;
   box-shadow: var(--shadow-soft);
+  animation: softPop 220ms var(--ease-spring);
+}
+
+#dog-form-section,
+.admin-list-section {
+  animation: fadeLift 320ms var(--ease-out) both;
 }
 
 #dog-form {
@@ -1117,6 +1258,20 @@ p {
   background: #fff;
   font: inherit;
   font-size: 0.96rem;
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: var(--primary);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
 }
 
 .form-group textarea {
@@ -1159,6 +1314,14 @@ p {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   background: #fff;
+  animation: fadeLift 260ms var(--ease-out) both;
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.dogs-list li:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
 }
 
 .dogs-list li > div:first-child {
@@ -1242,12 +1405,14 @@ p {
   display: grid;
   place-items: center;
   padding: 1rem;
+  animation: fadeIn 160ms var(--ease-out) both;
 }
 
 .modal-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(75, 61, 66, 0.45);
+  animation: fadeIn 160ms var(--ease-out) both;
 }
 
 .modal-dialog {
@@ -1260,6 +1425,7 @@ p {
   border-radius: 16px;
   background: var(--surface);
   box-shadow: var(--shadow);
+  animation: modalPop 220ms var(--ease-spring) both;
 }
 
 .modal-header {
@@ -1321,6 +1487,80 @@ p {
 .empty-state img {
   width: 96px;
   height: 96px;
+  animation: gentleFloat 3.4s ease-in-out infinite;
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 520ms var(--ease-out), transform 520ms var(--ease-out);
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeLift {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+  }
+}
+
+@keyframes softPop {
+  0% {
+    transform: scale(0.96);
+  }
+  70% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+@keyframes statusShimmer {
+  0%,
+  68% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes gentleFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes backgroundDrift {
+  to {
+    background-position: 110px 110px;
+  }
 }
 
 @media (max-width: 860px) {

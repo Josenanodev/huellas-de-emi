@@ -80,5 +80,31 @@ const socialImageUrl = image.startsWith("http")
       <p>&copy; 2026 Huellas de Emi. Todos los derechos reservados.</p>
     </div>
   </footer>
+
+  <script>
+    const revealTargets = document.querySelectorAll<HTMLElement>(
+      ".detail-section, .contact-section, .adoption-step, .admin-container, .empty-state",
+    );
+
+    if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      revealTargets.forEach((target) => target.classList.add("reveal-on-scroll"));
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -12% 0px", threshold: 0.12 },
+      );
+
+      revealTargets.forEach((target) => observer.observe(target));
+    } else {
+      revealTargets.forEach((target) => target.classList.add("is-visible"));
+    }
+  </script>
 </body>
 </html>

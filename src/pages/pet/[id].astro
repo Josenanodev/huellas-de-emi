@@ -203,9 +203,14 @@ const galleryImages = pet?.images.length ? pet.images : ["/images/default-dog.sv
         const index = Number(thumb.dataset.galleryIndex || 0);
         if (!image) return;
 
-        mainImage.src = image;
-        mainImage.alt = `Foto ${index + 1} de ${gallery.dataset.galleryPet || "la mascota"}`;
-        count && (count.textContent = `${index + 1} / ${thumbs.length}`);
+        mainImage.classList.add("is-changing");
+
+        window.setTimeout(() => {
+          mainImage.src = image;
+          mainImage.alt = `Foto ${index + 1} de ${gallery.dataset.galleryPet || "la mascota"}`;
+          count && (count.textContent = `${index + 1} / ${thumbs.length}`);
+          mainImage.classList.remove("is-changing");
+        }, 140);
 
         thumbs.forEach((item) => {
           const isActive = item === thumb;
