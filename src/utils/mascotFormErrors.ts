@@ -3,6 +3,7 @@ export type MascotErrorCode =
   | 'no_files'
   | 'invalid_file_type'
   | 'file_too_large'
+  | 'too_many_images'
   | 'birth_date_required'
   | 'pet_not_found'
   | 'invalid_pet_id'
@@ -22,6 +23,7 @@ export interface MascotFormError {
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_COUNT = 6;
 
 const FIELD_LABELS: Record<string, string> = {
   species: 'Especie',
@@ -149,6 +151,27 @@ export function parseApiError(
     };
   }
 
+  if (error === 'Too many images') {
+    return {
+      code: 'too_many_images',
+      title: 'Demasiadas imágenes',
+      message: `Cada mascota puede tener hasta ${MAX_IMAGE_COUNT} imágenes.`,
+      details: ['Elimina algunas imágenes antes de guardar.'],
+    };
+  }
+
+  if (error === 'Stored image too large') {
+    return {
+      code: 'file_too_large',
+      title: 'Imagen demasiado pesada',
+      message: 'Una o más imágenes siguen pesando demasiado después de optimizarlas.',
+      details: [
+        'Intenta con una imagen más ligera o recórtala antes de subirla.',
+        'El panel comprime automáticamente las imágenes nuevas, pero algunas fotos muy grandes pueden necesitar ajuste manual.',
+      ],
+    };
+  }
+
   if (error === 'La fecha aproximada de nacimiento es requerida') {
     return {
       code: 'birth_date_required',
@@ -237,8 +260,18 @@ export function validateImageFiles(files: FileList | File[] | null): MascotFormE
 
   const invalidTypes: string[] = [];
   const oversized: string[] = [];
+  const fileArray = Array.from(files);
 
-  for (const file of Array.from(files)) {
+  if (fileArray.length > MAX_IMAGE_COUNT) {
+    return {
+      code: 'too_many_images',
+      title: 'Demasiadas imágenes',
+      message: `Selecciona hasta ${MAX_IMAGE_COUNT} imágenes por mascota.`,
+      details: ['Guarda solo las mejores fotos para que el catálogo cargue rápido.'],
+    };
+  }
+
+  for (const file of fileArray) {
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       invalidTypes.push(`${file.name} (${file.type || 'tipo desconocido'})`);
     }

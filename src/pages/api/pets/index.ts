@@ -3,18 +3,29 @@ import type { IPet } from '../../../lib/models/Pet';
 import Pet from '../../../lib/models/Pet.js';
 import { checkAdmin } from '../../../utils/auth';
 import { connectDB } from '../../../lib/db';
-import { listPets } from '../../../lib/pets';
+import { sanitizePetImages } from '../../../lib/petImages';
+import { listPetSummaries } from '../../../lib/pets';
+
+const IMAGE_VALIDATION_ERRORS = new Set([
+  'Invalid image',
+  'Image URL too long',
+  'Stored image too large',
+  'Too many images',
+]);
 
 export const GET: APIRoute = async () => {
   try {
-    const pets = await listPets();
+    const pets = await listPetSummaries();
     return new Response(JSON.stringify(pets), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const message = (error as Error).message;
+    const status = IMAGE_VALIDATION_ERRORS.has(message) ? 400 : 500;
+
     return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
+      status,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -59,6 +70,10 @@ export const POST: APIRoute = async (context) => {
       }
     }
 
+    if (bodyData.images !== undefined) {
+      petData.images = sanitizePetImages(bodyData.images);
+    }
+
     if (!petData.approximateBirthDate) {
       return new Response(
         JSON.stringify({ error: 'La fecha aproximada de nacimiento es requerida' }),
@@ -77,8 +92,11 @@ export const POST: APIRoute = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
+    const message = (error as Error).message;
+    const status = IMAGE_VALIDATION_ERRORS.has(message) ? 400 : 500;
+
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { 'Content-Type': 'application/json' },
     });
   }

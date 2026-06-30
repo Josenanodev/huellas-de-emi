@@ -3,7 +3,15 @@ import mongoose from 'mongoose';
 import Pet from '../../../lib/models/Pet.js';
 import { connectDB } from '../../../lib/db';
 import { getPetById } from '../../../lib/pets';
+import { sanitizePetImages } from '../../../lib/petImages';
 import { checkAdmin } from '../../../utils/auth';
+
+const IMAGE_VALIDATION_ERRORS = new Set([
+  'Invalid image',
+  'Image URL too long',
+  'Stored image too large',
+  'Too many images',
+]);
 
 export const GET: APIRoute = async ({ params }) => {
   try {
@@ -22,8 +30,11 @@ export const GET: APIRoute = async ({ params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const message = (error as Error).message;
+    const status = IMAGE_VALIDATION_ERRORS.has(message) ? 400 : 500;
+
     return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
+      status,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -72,6 +83,10 @@ export const PUT: APIRoute = async (context) => {
       }
     }
 
+    if ('images' in body) {
+      updateData.images = sanitizePetImages(body.images);
+    }
+
     const pet = await Pet.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
@@ -89,8 +104,11 @@ export const PUT: APIRoute = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
+    const message = (error as Error).message;
+    const status = IMAGE_VALIDATION_ERRORS.has(message) ? 400 : 500;
+
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { 'Content-Type': 'application/json' },
     });
   }

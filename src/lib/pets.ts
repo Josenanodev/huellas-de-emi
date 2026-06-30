@@ -13,7 +13,13 @@ function serializePet(pet: any): PetType {
 
 export async function listPets(): Promise<PetType[]> {
   await connectDB();
-  const pets = await Pet.find().sort({ createdAt: -1 }).lean();
+  const pets = await Pet.find({}, { images: { $slice: 1 } }).sort({ createdAt: -1 }).lean();
+  return pets.map(serializePet);
+}
+
+export async function listPetSummaries(): Promise<Omit<PetType, 'images'>[]> {
+  await connectDB();
+  const pets = await Pet.find().select('-images').sort({ createdAt: -1 }).lean();
   return pets.map(serializePet);
 }
 
