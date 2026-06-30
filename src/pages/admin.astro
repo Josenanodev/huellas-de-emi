@@ -285,11 +285,49 @@ import Layout from "../layouts/Layout.astro";
   
   let currentDogImages: string[] = [];
   let pendingImageDeletes = new Set<string>();
+  let selectedCover: { type: "existing"; value: string } | { type: "upload"; index: number } | null = null;
   let allPets: any[] = [];
   const MAX_IMAGE_COUNT = 6;
   const MAX_IMAGE_DIMENSION = 1280;
   const IMAGE_QUALITY = 0.72;
   const MAX_STORED_IMAGE_CHARS = 450 * 1024;
+
+  function setButtonLoading(
+    button: HTMLButtonElement | null | undefined,
+    isLoading: boolean,
+    loadingText = "Cargando...",
+  ) {
+    if (!button) return;
+
+    if (isLoading) {
+      button.dataset.idleText ||= button.textContent || "";
+      button.disabled = true;
+      button.classList.add("is-loading");
+      button.textContent = loadingText;
+    } else {
+      button.disabled = false;
+      button.classList.remove("is-loading");
+      button.textContent = button.dataset.idleText || button.textContent || "";
+      delete button.dataset.idleText;
+    }
+  }
+
+  function setListFiltersDisabled(isDisabled: boolean) {
+    adminSearch && (adminSearch.disabled = isDisabled);
+    adminSpeciesFilter && (adminSpeciesFilter.disabled = isDisabled);
+    adminStatusFilter && (adminStatusFilter.disabled = isDisabled);
+    manageDogsTab && ((manageDogsTab as HTMLButtonElement).disabled = isDisabled);
+    addDogTab && ((addDogTab as HTMLButtonElement).disabled = isDisabled);
+  }
+
+  function renderListLoading(message: string) {
+    if (!dogsList) return;
+
+    const item = document.createElement("li");
+    item.className = "admin-loading-row";
+    item.textContent = message;
+    dogsList.replaceChildren(item);
+  }
 
   function getAuthHeaders(withJson = false): Record<string, string> {
     return {
@@ -443,6 +481,7 @@ import Layout from "../layouts/Layout.astro";
     dogIdInput.value = "";
     currentDogImages = [];
     pendingImageDeletes = new Set();
+    selectedCover = null;
     if (imagePreview) imagePreview.innerHTML = "";
     if (existingImagesSection) existingImagesSection.style.display = "none";
     if (existingImagesContainer) existingImagesContainer.innerHTML = "";
@@ -462,15 +501,22 @@ import Layout from "../layouts/Layout.astro";
     }
 
     existingImagesSection.style.display = "block";
+    const defaultCoverImage = currentDogImages.find((imageUrl) => !pendingImageDeletes.has(imageUrl));
 
-    currentDogImages.forEach((imageUrl: string) => {
+    currentDogImages.forEach((imageUrl: string, index: number) => {
       const isPendingDelete = pendingImageDeletes.has(imageUrl);
+      const isCover =
+        !isPendingDelete &&
+        (selectedCover?.type === "existing"
+          ? selectedCover.value === imageUrl
+          : !selectedCover && imageUrl === defaultCoverImage);
 
       const imageWrapper = document.createElement("div");
       imageWrapper.style.position = "relative";
       imageWrapper.style.border = "2px solid var(--border)";
       imageWrapper.style.borderRadius = "4px";
       imageWrapper.style.overflow = "hidden";
+      imageWrapper.style.background = "var(--surface-soft)";
 
       const img = document.createElement("img");
       img.src = imageUrl;
@@ -504,7 +550,36 @@ import Layout from "../layouts/Layout.astro";
 
       deleteBtn.addEventListener("click", () => {
         pendingImageDeletes.add(imageUrl);
+        if (selectedCover?.type === "existing" && selectedCover.value === imageUrl) {
+          selectedCover = null;
+        }
         renderExistingImages();
+      });
+
+      const coverBtn = document.createElement("button");
+      coverBtn.type = "button";
+      coverBtn.textContent = isCover ? "Portada" : "Usar portada";
+      coverBtn.style.position = "absolute";
+      coverBtn.style.left = "6px";
+      coverBtn.style.bottom = "6px";
+      coverBtn.style.zIndex = "2";
+      coverBtn.style.padding = "0.25rem 0.45rem";
+      coverBtn.style.border = "1px solid rgba(255, 255, 255, 0.7)";
+      coverBtn.style.borderRadius = "999px";
+      coverBtn.style.fontSize = "0.72rem";
+      coverBtn.style.fontWeight = "800";
+      coverBtn.style.color = isCover ? "#fff" : "var(--text)";
+      coverBtn.style.background = isCover
+        ? "rgba(72, 129, 93, 0.92)"
+        : "rgba(255, 255, 255, 0.86)";
+      coverBtn.style.cursor = "pointer";
+      coverBtn.style.opacity = isPendingDelete ? "0" : "1";
+      coverBtn.style.pointerEvents = isPendingDelete ? "none" : "auto";
+
+      coverBtn.addEventListener("click", () => {
+        selectedCover = { type: "existing", value: imageUrl };
+        renderExistingImages();
+        renderImagePreview();
       });
 
       if (isPendingDelete) {
@@ -555,6 +630,7 @@ import Layout from "../layouts/Layout.astro";
       }
 
       imageWrapper.appendChild(img);
+      imageWrapper.appendChild(coverBtn);
       imageWrapper.appendChild(deleteBtn);
       existingImagesContainer.appendChild(imageWrapper);
     });
@@ -564,8 +640,7 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
-  // Image preview functionality
-  imageFilesInput?.addEventListener("change", () => {
+  function renderImagePreview() {
     if (!imagePreview) return;
 
     imagePreview.innerHTML = "";
@@ -577,32 +652,77 @@ import Layout from "../layouts/Layout.astro";
         const reader = new FileReader();
 
         reader.onload = (e) => {
+          const previewWrapper = document.createElement("div");
+          previewWrapper.style.position = "relative";
+          previewWrapper.style.overflow = "hidden";
+          previewWrapper.style.border = "2px solid var(--border)";
+          previewWrapper.style.borderRadius = "4px";
+
           const img = document.createElement("img");
           img.src = e.target?.result as string;
           img.style.width = "100%";
           img.style.height = "100px";
           img.style.objectFit = "cover";
-          img.style.borderRadius = "4px";
-          img.style.border = "2px solid var(--border)";
-          imagePreview.appendChild(img);
+          img.style.display = "block";
+
+          const isCover = selectedCover?.type === "upload" && selectedCover.index === i;
+          const coverBtn = document.createElement("button");
+          coverBtn.type = "button";
+          coverBtn.textContent = isCover ? "Portada" : "Usar portada";
+          coverBtn.style.position = "absolute";
+          coverBtn.style.left = "6px";
+          coverBtn.style.bottom = "6px";
+          coverBtn.style.padding = "0.25rem 0.45rem";
+          coverBtn.style.border = "1px solid rgba(255, 255, 255, 0.7)";
+          coverBtn.style.borderRadius = "999px";
+          coverBtn.style.fontSize = "0.72rem";
+          coverBtn.style.fontWeight = "800";
+          coverBtn.style.color = isCover ? "#fff" : "var(--text)";
+          coverBtn.style.background = isCover
+            ? "rgba(72, 129, 93, 0.92)"
+            : "rgba(255, 255, 255, 0.86)";
+          coverBtn.style.cursor = "pointer";
+
+          coverBtn.addEventListener("click", () => {
+            selectedCover = { type: "upload", index: i };
+            renderExistingImages();
+            renderImagePreview();
+          });
+
+          previewWrapper.appendChild(img);
+          previewWrapper.appendChild(coverBtn);
+          imagePreview.appendChild(previewWrapper);
         };
 
         if (file) reader.readAsDataURL(file);
       }
     }
+  }
+
+  // Image preview functionality
+  imageFilesInput?.addEventListener("change", () => {
+    if (selectedCover?.type === "upload") {
+      selectedCover = null;
+    }
+    renderImagePreview();
   });
 
   // Check if already logged in
   const savedPassword = sessionStorage.getItem("adminPassword");
   if (savedPassword) {
     adminPassword = savedPassword;
-    validateAndShowAdminPanel();
+    validateAndShowAdminPanel().finally(() => {
+      setButtonLoading(loginBtn as HTMLButtonElement | null, false);
+      if (passwordInput) passwordInput.disabled = false;
+    });
   }
 
   loginBtn?.addEventListener("click", async () => {
     adminPassword = passwordInput.value;
     if (adminPassword) {
       await validateAndShowAdminPanel();
+      setButtonLoading(loginBtn as HTMLButtonElement | null, false);
+      if (passwordInput) passwordInput.disabled = false;
     } else {
       showAuthMessage("Por favor ingrese una contraseña", "error");
     }
@@ -643,6 +763,9 @@ import Layout from "../layouts/Layout.astro";
   adminStatusFilter?.addEventListener("change", renderPetsList);
 
   async function validateAndShowAdminPanel() {
+    setButtonLoading(loginBtn as HTMLButtonElement | null, true, "Validando...");
+    if (passwordInput) passwordInput.disabled = true;
+
     try {
       const response = await fetch("/api/auth/check", {
         method: "POST",
@@ -654,12 +777,16 @@ import Layout from "../layouts/Layout.astro";
       if (!response.ok) {
         sessionStorage.removeItem("adminPassword");
         showAuthMessage("Contraseña incorrecta", "error");
+        setButtonLoading(loginBtn as HTMLButtonElement | null, false);
+        if (passwordInput) passwordInput.disabled = false;
         return;
       }
 
       sessionStorage.setItem("adminPassword", adminPassword);
       showAuthMessage("", "success");
       showAdminPanel();
+      setButtonLoading(loginBtn as HTMLButtonElement | null, false);
+      if (passwordInput) passwordInput.disabled = false;
     } catch (error) {
       showAuthMessage("No se pudo validar la contraseña", "error");
     }
@@ -708,6 +835,18 @@ import Layout from "../layouts/Layout.astro";
       data.images = [...keptExistingImages, ...uploadedUrls];
     }
 
+    let coverImage = "";
+    if (selectedCover?.type === "existing") {
+      const coverIndex = rawKeptExistingImages.indexOf(selectedCover.value);
+      coverImage = coverIndex >= 0 ? keptExistingImages[coverIndex] || "" : "";
+    } else if (selectedCover?.type === "upload") {
+      coverImage = uploadedUrls[selectedCover.index] || "";
+    }
+
+    if (coverImage) {
+      data.images = [coverImage, ...data.images.filter((image: string) => image !== coverImage)];
+    }
+
     if (data.images.length > MAX_IMAGE_COUNT) {
       throw createFormError(
         "too_many_images",
@@ -745,6 +884,9 @@ import Layout from "../layouts/Layout.astro";
 
     currentDogImages = [...dog.images];
     pendingImageDeletes = new Set();
+    selectedCover = currentDogImages[0]
+      ? { type: "existing", value: currentDogImages[0] }
+      : null;
     renderExistingImages();
     (document.getElementById("images") as HTMLInputElement).value = "";
 
@@ -792,11 +934,10 @@ import Layout from "../layouts/Layout.astro";
     if (errorModal) errorModal.hidden = true;
   }
 
-  function setSubmitLoading(isLoading: boolean) {
+  function setSubmitLoading(isLoading: boolean, loadingText = "Guardando...") {
     if (!submitBtn) return;
 
-    submitBtn.disabled = isLoading;
-    submitBtn.textContent = isLoading ? "Guardando..." : "Guardar";
+    setButtonLoading(submitBtn, isLoading, loadingText);
   }
 
   errorModalCloseBtn?.addEventListener("click", hideErrorModal);
@@ -864,6 +1005,9 @@ import Layout from "../layouts/Layout.astro";
   }
 
   async function loadDogs() {
+    renderListLoading("Cargando mascotas...");
+    setListFiltersDisabled(true);
+
     try {
       const response = await fetch("/api/pets");
       if (!response.ok) {
@@ -881,6 +1025,8 @@ import Layout from "../layouts/Layout.astro";
     } catch (error) {
       const message = error instanceof Error ? error.message : "Error al cargar las mascotas";
       showAdminMessage(message, "error");
+    } finally {
+      setListFiltersDisabled(false);
     }
   }
 
@@ -905,7 +1051,7 @@ import Layout from "../layouts/Layout.astro";
     const formData = new FormData(dogForm);
     let uploadedUrls: string[] = [];
 
-    setSubmitLoading(true);
+    setSubmitLoading(true, "Optimizando imágenes...");
 
     try {
       uploadedUrls = await optimizeSelectedImages();
@@ -935,6 +1081,7 @@ import Layout from "../layouts/Layout.astro";
     const dogId = dogIdInput.value;
     const url = dogId ? `/api/pets/${dogId}` : "/api/pets";
     const method = dogId ? "PUT" : "POST";
+    setSubmitLoading(true, "Guardando...");
 
     try {
       const response = await fetch(url, {
@@ -950,7 +1097,7 @@ import Layout from "../layouts/Layout.astro";
         );
         resetDogForm();
         showAdminView("manage");
-        loadDogs();
+        await loadDogs();
       } else {
         const errorBody = await response.json().catch(() => null);
         showErrorModal(parseApiError(response.status, errorBody?.error, "save"));
@@ -967,7 +1114,9 @@ import Layout from "../layouts/Layout.astro";
     showAdminView("manage");
   });
 
-  async function editDog(id: string) {
+  async function editDog(id: string, button?: HTMLButtonElement) {
+    setButtonLoading(button, true, "Cargando...");
+
     try {
       const response = await fetch(`/api/pets/${id}`);
 
@@ -981,13 +1130,17 @@ import Layout from "../layouts/Layout.astro";
       fillDogForm(dog);
     } catch {
       showErrorModal(createNetworkError("load"));
+    } finally {
+      setButtonLoading(button, false);
     }
   }
 
-  async function deleteDog(id: string) {
+  async function deleteDog(id: string, button?: HTMLButtonElement) {
     if (!confirm("¿Estás seguro de que quieres eliminar esta mascota?")) {
       return;
     }
+
+    setButtonLoading(button, true, "Eliminando...");
 
     try {
       const response = await fetch(`/api/pets/${id}`, {
@@ -997,13 +1150,15 @@ import Layout from "../layouts/Layout.astro";
 
       if (response.ok) {
         showAdminMessage("Mascota eliminada correctamente", "success");
-        loadDogs();
+        await loadDogs();
       } else {
         const error = await response.json();
         showAdminMessage(error.error || "Error al eliminar la mascota", "error");
       }
     } catch (error) {
       showAdminMessage("Error al eliminar la mascota", "error");
+    } finally {
+      setButtonLoading(button, false);
     }
   }
 
@@ -1017,9 +1172,9 @@ import Layout from "../layouts/Layout.astro";
     if (!id) return;
 
     if (action === "edit") {
-      await editDog(id);
+      await editDog(id, button);
     } else if (action === "delete") {
-      await deleteDog(id);
+      await deleteDog(id, button);
     }
   });
 </script>

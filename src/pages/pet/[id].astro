@@ -30,6 +30,7 @@ const pageDescription = pet
   : "Conoce esta mascota en adopción de Huellas de Emi.";
 const petImage = pet?.images.find((image) => image.startsWith("http") || image.startsWith("/"));
 const socialImage = petImage || "/images/og-cover.png";
+const galleryImages = pet?.images.length ? pet.images : ["/images/default-dog.svg"];
 ---
 
 <Layout
@@ -43,19 +44,44 @@ const socialImage = petImage || "/images/og-cover.png";
     ) : pet ? (
       <article class={`dog-detail species-${pet.species}`}>
         <div class="dog-detail-header">
-          <div class="dog-detail-images">
-            {pet.images.length > 0 ? (
-              pet.images.map((image: string) => (
-                <img
-                  src={image}
-                  alt={pet.name}
-                  class="dog-detail-image"
-                  loading="lazy"
-                  decoding="async"
-                />
-              ))
-            ) : (
-              <img src="/images/default-dog.svg" alt={pet.name} class="dog-detail-image" />
+          <div class="pet-gallery" data-pet-gallery data-gallery-pet={pet.name}>
+            <div class="pet-gallery-main">
+              <img
+                src={galleryImages[0]}
+                alt={pet.name}
+                class="pet-gallery-image"
+                data-gallery-main
+                fetchpriority="high"
+                decoding="async"
+              />
+              {galleryImages.length > 1 && (
+                <span class="pet-gallery-count" data-gallery-count>
+                  1 / {galleryImages.length}
+                </span>
+              )}
+            </div>
+
+            {galleryImages.length > 1 && (
+              <div class="pet-gallery-thumbs" aria-label={`Fotos de ${pet.name}`}>
+                {galleryImages.map((image: string, index: number) => (
+                  <button
+                    type="button"
+                    class={`pet-gallery-thumb${index === 0 ? " active" : ""}`}
+                    data-gallery-thumb
+                    data-gallery-image={image}
+                    data-gallery-index={index}
+                    aria-label={`Ver foto ${index + 1} de ${pet.name}`}
+                    aria-pressed={index === 0 ? "true" : "false"}
+                  >
+                    <img
+                      src={image}
+                      alt=""
+                      loading={index === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
@@ -160,3 +186,33 @@ const socialImage = petImage || "/images/og-cover.png";
     </div>
   </div>
 </Layout>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-pet-gallery]").forEach((gallery) => {
+    const mainImage = gallery.querySelector<HTMLImageElement>("[data-gallery-main]");
+    const count = gallery.querySelector<HTMLElement>("[data-gallery-count]");
+    const thumbs = Array.from(
+      gallery.querySelectorAll<HTMLButtonElement>("[data-gallery-thumb]"),
+    );
+
+    if (!mainImage || thumbs.length === 0) return;
+
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener("click", () => {
+        const image = thumb.dataset.galleryImage;
+        const index = Number(thumb.dataset.galleryIndex || 0);
+        if (!image) return;
+
+        mainImage.src = image;
+        mainImage.alt = `Foto ${index + 1} de ${gallery.dataset.galleryPet || "la mascota"}`;
+        count && (count.textContent = `${index + 1} / ${thumbs.length}`);
+
+        thumbs.forEach((item) => {
+          const isActive = item === thumb;
+          item.classList.toggle("active", isActive);
+          item.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+      });
+    });
+  });
+</script>

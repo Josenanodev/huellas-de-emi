@@ -614,6 +614,24 @@ p {
   transform: translateY(-1px);
 }
 
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.btn.is-loading::before {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  background: transparent;
+  mask: none;
+  animation: spin 700ms linear infinite;
+}
+
 .btn-soft,
 .btn-secondary {
   border-color: var(--border);
@@ -671,21 +689,96 @@ p {
   align-items: start;
 }
 
-.dog-detail-images {
+.pet-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 0.75rem;
+  align-items: start;
+  min-width: 0;
 }
 
-.dog-detail-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  height: auto;
+.pet-gallery-main {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  object-fit: cover;
+  background: var(--surface-soft);
   box-shadow: var(--shadow-soft);
+}
+
+.pet-gallery-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pet-gallery-count {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: rgba(64, 49, 56, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.pet-gallery-thumbs {
+  display: grid;
+  gap: 0.55rem;
+  max-height: min(68vh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.pet-gallery-thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.pet-gallery-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  cursor: pointer;
+  box-shadow: none;
+  opacity: 0.72;
+  transition:
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.pet-gallery-thumb:hover,
+.pet-gallery-thumb:focus-visible,
+.pet-gallery-thumb.active {
+  border-color: var(--primary);
+  opacity: 1;
+}
+
+.pet-gallery-thumb:focus-visible {
+  outline: 3px solid rgba(232, 105, 151, 0.28);
+  outline-offset: 2px;
+}
+
+.pet-gallery-thumb.active {
+  transform: scale(0.96);
+}
+
+.pet-gallery-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dog-detail-info {
@@ -1091,9 +1184,31 @@ p {
   text-align: center;
 }
 
+.admin-loading-row {
+  color: var(--primary-dark);
+  justify-content: center !important;
+  text-align: center;
+}
+
+.admin-loading-row::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--primary);
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: spin 700ms linear infinite;
+}
+
 .dog-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error,
@@ -1221,6 +1336,20 @@ p {
   .dog-detail-info {
     position: static;
   }
+
+  .pet-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .pet-gallery-thumbs {
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(68px, 18vw, 96px);
+    grid-template-columns: none;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.2rem;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1264,6 +1393,18 @@ p {
 
   .dogs-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pet-gallery {
+    gap: 0.6rem;
+  }
+
+  .pet-gallery-main {
+    border-radius: 8px;
+  }
+
+  .pet-gallery-thumbs {
+    grid-auto-columns: 64px;
   }
 
   .contact-section,
