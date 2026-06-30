@@ -2,6 +2,17 @@ import mongoose from 'mongoose';
 import '../lib/load-env';
 
 let isConnected = false;
+const DEFAULT_DB_NAME = 'huellas-de-emi';
+
+function getDatabaseNameFromUri(uri: string): string | null {
+  try {
+    const parsedUri = new URL(uri);
+    const databaseName = parsedUri.pathname.replace(/^\/+/, '').trim();
+    return databaseName || null;
+  } catch {
+    return null;
+  }
+}
 
 export async function connectDB() {
   if (isConnected) {
@@ -19,8 +30,16 @@ export async function connectDB() {
         'MongoDB URI is not defined. Set SECRET_MONGODB_URI (or MONGODB_URI) in environment variables.'
       );
     }
+    const dbName =
+      import.meta.env.SECRET_MONGODB_DB_NAME?.trim() ||
+      process.env.SECRET_MONGODB_DB_NAME?.trim() ||
+      process.env.MONGODB_DB_NAME?.trim() ||
+      getDatabaseNameFromUri(uri) ||
+      DEFAULT_DB_NAME;
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(uri, {
+      dbName,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 5000,
       connectTimeoutMS: 5000,
